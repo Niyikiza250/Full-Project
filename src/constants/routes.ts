@@ -23,6 +23,9 @@ export const ROUTES = {
   REPORTS: '/reports',
   ACHIEVEMENTS: '/achievements',
   ADMIN_USERS: '/admin/users',
+  ADMIN_FIELDS: '/admin/fields',
+  ADMIN_DISTRICTS: '/admin/districts',
+  ADMIN_CHURCHES: '/admin/churches',
   FORCE_PASSWORD_CHANGE: '/change-password-force',
   // New role-specific routes
   FIELDS: '/fields',
@@ -47,11 +50,27 @@ export const ROUTES = {
   LANGUAGE_SETTINGS: '/language-settings',
   CHURCH_LEADERS: '/church-leaders',
   ACTIVITIES: '/activities',
+  // New module routes
+  PRAYER_COUNSELING: '/prayer-counseling',
+  TRAINING: '/training',
+  TRAINING_COURSE: '/training/courses/:id',
+  TRAINING_LESSON: '/training/lessons/:id',
+  TRAINING_QUIZ: '/training/quizzes/:id',
+  CERTIFICATES: '/training/certificates',
+  DOCUMENTS: '/documents',
+  NOTIFICATIONS_LIST: '/notifications',
+  GROUP_MESSAGES: '/communication/groups',
+  FORUMS: '/communication/forums',
+  FORUM: '/communication/forums/:id',
+  VOLUNTEER_HOURS: '/volunteers/hours',
+  VOLUNTEER_RECOGNITION: '/volunteers/recognition',
+  VOLUNTEER_AVAILABILITY: '/volunteers/availability',
 };
 
 export type UserRole =
   | 'SUPER_ADMIN'
   | 'UNION_LEADER'
+  | 'FIELD_ADMINISTRATOR'
   | 'FIELD_LEADER'
   | 'DISTRICT_LEADER'
   | 'CHURCH_LEADER'
@@ -62,12 +81,13 @@ export type UserRole =
 export const ROLE_HIERARCHY: Record<UserRole, number> = {
   SUPER_ADMIN: 0,
   UNION_LEADER: 1,
-  FIELD_LEADER: 2,
-  DISTRICT_LEADER: 3,
-  CHURCH_LEADER: 4,
-  MINISTRY_LEADER: 5,
-  MEMBER: 6,
-  VOLUNTEER: 7,
+  FIELD_ADMINISTRATOR: 2,
+  FIELD_LEADER: 3,
+  DISTRICT_LEADER: 4,
+  CHURCH_LEADER: 5,
+  MINISTRY_LEADER: 6,
+  MEMBER: 7,
+  VOLUNTEER: 8,
 };
 
 export function canAccess(requesterRole: UserRole, targetRole: UserRole): boolean {

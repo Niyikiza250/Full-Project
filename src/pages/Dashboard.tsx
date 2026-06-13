@@ -9,6 +9,7 @@ import { motion } from 'framer-motion';
 // Dashboard role sub-components
 import { SuperAdminDashboard } from './dashboard/SuperAdminDashboard';
 import { UnionLeaderDashboard } from './dashboard/UnionLeaderDashboard';
+import { FieldAdministratorDashboard } from './dashboard/FieldAdministratorDashboard';
 import { FieldLeaderDashboard } from './dashboard/FieldLeaderDashboard';
 import { DistrictLeaderDashboard } from './dashboard/DistrictLeaderDashboard';
 import { ChurchLeaderDashboard } from './dashboard/ChurchLeaderDashboard';
@@ -26,6 +27,8 @@ const Dashboard: React.FC = () => {
         return <SuperAdminDashboard />;
       case 'UNION_LEADER':
         return <UnionLeaderDashboard />;
+      case 'FIELD_ADMINISTRATOR':
+        return <FieldAdministratorDashboard />;
       case 'FIELD_LEADER':
         return <FieldLeaderDashboard />;
       case 'DISTRICT_LEADER':

@@ -172,6 +172,13 @@ export function useHierarchicalAnnouncements() {
         const targetsMe = a.targetRole === 'UNION_LEADER';
         return fromSelf || fromSuperAdmin || (targetsMe && a.unionId === user.unionId);
       }
+      case 'FIELD_ADMINISTRATOR': {
+        const fromSelf = a.authorRole === 'FIELD_ADMINISTRATOR' && a.fieldId === user.fieldId;
+        const fromUnion = a.authorRole === 'UNION_LEADER' && a.unionId === user.unionId;
+        const fromSuperAdmin = a.authorRole === 'SUPER_ADMIN';
+        const targetsMe = a.targetRole === 'FIELD_ADMINISTRATOR';
+        return fromSelf || fromUnion || fromSuperAdmin || (targetsMe && a.fieldId === user.fieldId);
+      }
       case 'FIELD_LEADER': {
         const fromSelf = a.authorRole === 'FIELD_LEADER' && a.fieldId === user.fieldId;
         const fromUnion = a.authorRole === 'UNION_LEADER' && a.unionId === user.unionId;
@@ -207,14 +214,14 @@ export function useHierarchicalAnnouncements() {
       case 'MEMBER': {
         const isMine = a.churchId === user.churchId;
         const fromLeader = a.authorRole === 'CHURCH_LEADER' || a.authorRole === 'MINISTRY_LEADER';
-        const fromUpper = ['DISTRICT_LEADER', 'FIELD_LEADER', 'UNION_LEADER', 'SUPER_ADMIN'].includes(a.authorRole);
+        const fromUpper = ['DISTRICT_LEADER', 'FIELD_ADMINISTRATOR', 'FIELD_LEADER', 'UNION_LEADER', 'SUPER_ADMIN'].includes(a.authorRole);
         return isMine && (fromLeader || fromUpper);
       }
       case 'VOLUNTEER': {
         const isMyMinistry = a.ministryId && a.ministryId === user.ministryId;
         const fromMinistry = a.authorRole === 'MINISTRY_LEADER';
         const fromChurch = a.authorRole === 'CHURCH_LEADER' && a.churchId === user.churchId;
-        const fromUpper = ['DISTRICT_LEADER', 'FIELD_LEADER', 'UNION_LEADER', 'SUPER_ADMIN'].includes(a.authorRole);
+        const fromUpper = ['DISTRICT_LEADER', 'FIELD_ADMINISTRATOR', 'FIELD_LEADER', 'UNION_LEADER', 'SUPER_ADMIN'].includes(a.authorRole);
         return (isMyMinistry && fromMinistry) || fromChurch || fromUpper;
       }
       default:

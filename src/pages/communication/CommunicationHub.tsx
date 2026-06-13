@@ -36,8 +36,6 @@ import {
   Paperclip,
   Trash2,
   FileText,
-  AlertTriangle,
-  CheckCircle,
   Clock
 } from 'lucide-react';
 import type { AnnouncementCategory, AnnouncementPriority, Attachment } from '@/types/communication';
@@ -45,7 +43,7 @@ import type { AnnouncementCategory, AnnouncementPriority, Attachment } from '@/t
 type Tab = 'announcements' | 'bulletin' | 'messages' | 'sms' | 'notifications';
 
 const CommunicationHub: React.FC = () => {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { user } = useAuthStore();
   const [tab, setTab] = useState<Tab>('announcements');
   
@@ -84,14 +82,11 @@ const CommunicationHub: React.FC = () => {
   const [compose, setCompose] = useState({ to: 'Treasury', subject: '', preview: '' });
   const [sms, setSms] = useState({ audience: 'Field Leaders', templateId: '', body: '' });
 
-  React.useEffect(() => {
-    if (!smsTemplates?.length) return;
-    setSms((s) => {
-      if (s.body) return s;
-      const tpl = smsTemplates.find((x) => x.id === s.templateId) ?? smsTemplates[0];
-      return { ...s, templateId: tpl.id, body: tpl.body };
-    });
-  }, [smsTemplates]);
+  const effectiveSms = {
+    ...sms,
+    templateId: sms.templateId || smsTemplates[0]?.id || '',
+    body: sms.body || smsTemplates[0]?.body || '',
+  };
 
   const tabs: { id: Tab; label: string }[] = [
     { id: 'announcements', label: t('communication.tabAnnouncements') },
@@ -122,7 +117,7 @@ const CommunicationHub: React.FC = () => {
     html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
     
     // Bullet Lists
-    html = html.replace(/^\-\s+(.+)$/gm, '<li class="ml-4 list-disc text-xs text-slate-650 dark:text-slate-350">$1</li>');
+    html = html.replace(/^- +(.+)$/gm, '<li class="ml-4 list-disc text-xs text-slate-700 dark:text-slate-400">$1</li>');
     
     // Newlines
     html = html.replace(/\n/g, '<br />');
@@ -195,13 +190,13 @@ const CommunicationHub: React.FC = () => {
       setScheduledDate('');
       setAttachments([]);
       setIsModalOpen(false);
-    } catch (err) {
+    } catch {
       addToast(t('communication.toasts.importantAlert'), t('communication.toasts.publishFailed'), 'ALERT');
     }
   };
 
   // Determine role-based create permissions
-  const canCreate = user?.role === 'ADMIN';
+  const canCreate = user?.role === 'SUPER_ADMIN';
   
   // Target audience label
   const getTargetAudienceLabel = () => {
@@ -241,7 +236,7 @@ const CommunicationHub: React.FC = () => {
               'relative rounded-xl px-4 py-2.5 text-xs font-bold transition-all sm:text-sm',
               tab === x.id 
                 ? 'bg-gradient-to-r from-sda-blue to-sda-blue-dark text-white shadow-md' 
-                : 'text-slate-650 hover:bg-slate-100 hover:text-sda-blue dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-sda-gold-light'
+                : 'text-slate-700 hover:bg-slate-100 hover:text-sda-blue dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-sda-gold-light'
             )}
           >
             {x.label}
@@ -268,11 +263,11 @@ const CommunicationHub: React.FC = () => {
               {/* Header and Create Button */}
               <div className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-100 dark:border-slate-800 pb-4">
                 <div>
-                  <h3 className="text-base font-bold text-slate-850 dark:text-slate-100 flex items-center gap-2">
+                  <h3 className="text-base font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                     <Megaphone className="text-sda-blue dark:text-sda-gold shrink-0" size={18} />
                     {t('communication.announcementHistory')}
                   </h3>
-                  <p className="text-xs text-slate-550 dark:text-slate-400 mt-0.5">
+                  <p className="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
                     {t('dashboard.welcome', { name: user?.name })}
                   </p>
                 </div>
@@ -292,7 +287,7 @@ const CommunicationHub: React.FC = () => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 {/* Search */}
                 <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-450">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-slate-500">
                     <Search size={16} />
                   </span>
                   <input
@@ -342,7 +337,7 @@ const CommunicationHub: React.FC = () => {
               ) : filteredAnnouncements.length === 0 ? (
                 <div className="p-12 text-center border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-3xl">
                   <Megaphone className="mx-auto text-slate-400 mb-3" size={32} />
-                  <p className="text-sm font-semibold text-slate-650 dark:text-slate-450">
+                  <p className="text-sm font-semibold text-slate-700 dark:text-slate-500">
                     {t('communication.noAnnouncements')}
                   </p>
                 </div>
@@ -358,7 +353,7 @@ const CommunicationHub: React.FC = () => {
                           'rounded-2xl border p-5 transition-all relative overflow-hidden cursor-pointer',
                           isUnread
                             ? 'border-sda-blue/30 dark:border-sda-gold/25 bg-gradient-to-br from-sda-blue/5 to-transparent dark:from-sda-gold/5'
-                            : 'border-slate-150 dark:border-slate-850 hover:bg-slate-50/30 dark:hover:bg-slate-800/20'
+                            : 'border-slate-200 dark:border-slate-900 hover:bg-slate-50/30 dark:hover:bg-slate-800/20'
                         )}
                       >
                         {/* Unread indicator */}
@@ -379,13 +374,13 @@ const CommunicationHub: React.FC = () => {
                           </span>
 
                           {/* Category Badge */}
-                          <span className="rounded-lg bg-slate-100 dark:bg-slate-850 px-2.5 py-0.5 text-[9px] font-extrabold uppercase text-slate-500 tracking-wide">
+                          <span className="rounded-lg bg-slate-100 dark:bg-slate-900 px-2.5 py-0.5 text-[9px] font-extrabold uppercase text-slate-500 tracking-wide">
                             {t(`communication.category${a.category.charAt(0) + a.category.slice(1).toLowerCase()}`)}
                           </span>
 
                           {/* Scheduled Indicator */}
                           {a.scheduledAt && (
-                            <span className="rounded-lg bg-purple-100 dark:bg-purple-950/40 text-purple-750 dark:text-purple-400 px-2.5 py-0.5 text-[9px] font-extrabold flex items-center gap-1">
+                            <span className="rounded-lg bg-purple-100 dark:bg-purple-950/40 text-purple-800 dark:text-purple-400 px-2.5 py-0.5 text-[9px] font-extrabold flex items-center gap-1">
                               <Clock size={10} />
                               {new Date(a.scheduledAt).toLocaleString()}
                             </span>
@@ -393,13 +388,13 @@ const CommunicationHub: React.FC = () => {
                         </div>
 
                         {/* Title */}
-                        <h4 className="font-extrabold text-sm sm:text-base text-slate-850 dark:text-white leading-tight">
+                        <h4 className="font-extrabold text-sm sm:text-base text-slate-900 dark:text-white leading-tight">
                           {a.title}
                         </h4>
 
                         {/* Parsed Body Preview */}
                         <div
-                          className="mt-2.5 text-xs sm:text-sm text-slate-650 dark:text-slate-350 leading-relaxed font-medium space-y-1.5"
+                          className="mt-2.5 text-xs sm:text-sm text-slate-700 dark:text-slate-400 leading-relaxed font-medium space-y-1.5"
                           dangerouslySetInnerHTML={{ __html: parseMarkdownToHtml(a.body) }}
                         />
 
@@ -414,7 +409,7 @@ const CommunicationHub: React.FC = () => {
                                   e.stopPropagation();
                                   addToast(t('communication.toasts.adminAction'), t('communication.toasts.downloading', { name: file.name, size: file.size }), 'SUCCESS');
                                 }}
-                                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-650 dark:text-slate-350 transition-colors"
+                                className="inline-flex items-center gap-2 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 hover:bg-slate-100 dark:hover:bg-slate-800 px-3 py-1.5 text-xs font-bold text-slate-700 dark:text-slate-400 transition-colors"
                               >
                                 <FileText size={13} className="text-sda-blue dark:text-sda-gold" />
                                 <span>{file.name}</span>
@@ -425,7 +420,7 @@ const CommunicationHub: React.FC = () => {
                         )}
 
                         {/* Footer Information */}
-                        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap justify-between items-center text-[10px] sm:text-xs text-slate-450 font-semibold gap-2">
+                        <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 flex flex-wrap justify-between items-center text-[10px] sm:text-xs text-slate-500 font-semibold gap-2">
                           <div>
                             {a.author} ({getTranslatedRoleLabel(a.authorRole, t)})
                           </div>
@@ -455,7 +450,7 @@ const CommunicationHub: React.FC = () => {
                     {b.pinned && <Pin className="mt-0.5 shrink-0 text-sda-blue dark:text-sda-gold" size={18} aria-hidden />}
                     <div>
                       <p className="font-bold text-slate-900 dark:text-white">{b.title}</p>
-                      <p className="text-sm text-slate-550 dark:text-slate-400 mt-1">{b.excerpt}</p>
+                      <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">{b.excerpt}</p>
                       <p className="mt-2 text-xs text-slate-400 font-semibold">
                         {b.category} · {new Date(b.updatedAt).toLocaleDateString()}
                       </p>
@@ -480,7 +475,7 @@ const CommunicationHub: React.FC = () => {
                         className={cn(
                           'w-full rounded-2xl border px-4 py-3.5 text-left text-sm transition-all',
                           m.read
-                            ? 'border-slate-100 bg-slate-50/40 dark:border-slate-850 dark:bg-slate-800/10 text-slate-700 dark:text-slate-350'
+                            ? 'border-slate-100 bg-slate-50/40 dark:border-slate-900 dark:bg-slate-800/10 text-slate-700 dark:text-slate-400'
                             : 'border-sda-blue/30 bg-sda-blue/5 text-slate-900 dark:text-white dark:border-sda-gold/20'
                         )}
                       >
@@ -488,7 +483,7 @@ const CommunicationHub: React.FC = () => {
                         <p className="text-xs text-slate-500 mt-1 font-semibold">
                           {m.fromName} → {m.toName}
                         </p>
-                        <p className="mt-2 line-clamp-2 text-xs text-slate-650 dark:text-slate-400">{m.preview}</p>
+                        <p className="mt-2 line-clamp-2 text-xs text-slate-700 dark:text-slate-400">{m.preview}</p>
                         <span className="mt-2.5 inline-block text-[9px] font-black uppercase text-slate-400 tracking-wider">
                           {m.read ? t('common.read') : t('common.unread')}
                         </span>
@@ -547,7 +542,7 @@ const CommunicationHub: React.FC = () => {
             ) : (
               <div className="grid gap-6 lg:grid-cols-2">
                 <div>
-                  <h3 className="flex items-center gap-2 font-bold text-slate-850 dark:text-white">
+                  <h3 className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
                     <Smartphone className="text-sda-blue dark:text-sda-gold" size={20} aria-hidden />
                     {t('communication.smsComposer')}
                   </h3>
@@ -562,7 +557,7 @@ const CommunicationHub: React.FC = () => {
                   
                   <label className="mt-3.5 block text-[10px] font-black uppercase text-slate-500 tracking-wider">{t('communication.template')}</label>
                   <select
-                    value={sms.templateId}
+                    value={effectiveSms.templateId}
                     onChange={(e) => {
                       const tpl = smsTemplates.find((x) => x.id === e.target.value);
                       setSms((s) => ({ ...s, templateId: e.target.value, body: tpl?.body ?? '' }));
@@ -580,9 +575,9 @@ const CommunicationHub: React.FC = () => {
                   <label className="text-[10px] font-black uppercase text-slate-500 tracking-wider block">{t('communication.smsPreview')}</label>
                   <textarea
                     rows={8}
-                    value={sms.body}
+                    value={effectiveSms.body}
                     onChange={(e) => setSms((s) => ({ ...s, body: e.target.value }))}
-                    className="mt-1 w-full rounded-2xl border border-slate-250 bg-slate-50/50 p-4 font-mono text-xs leading-normal dark:border-slate-800 dark:bg-slate-955 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-sda-blue"
+                    className="mt-1 w-full rounded-2xl border border-slate-300 bg-slate-50/50 p-4 font-mono text-xs leading-normal dark:border-slate-800 dark:bg-slate-950 dark:text-slate-300 focus:outline-none focus:ring-2 focus:ring-sda-blue"
                   />
                   <button
                     type="button"
@@ -599,7 +594,7 @@ const CommunicationHub: React.FC = () => {
           {tab === 'notifications' && (
             <div>
               <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 dark:border-slate-800 pb-3">
-                <h3 className="flex items-center gap-2 font-bold text-slate-850 dark:text-white">
+                <h3 className="flex items-center gap-2 font-bold text-slate-900 dark:text-white">
                   <Bell size={18} className="text-sda-blue dark:text-sda-gold" aria-hidden />
                   {t('communication.tabNotifications')}
                 </h3>
@@ -622,7 +617,7 @@ const CommunicationHub: React.FC = () => {
                       onClick={() => markN(n.id)}
                       className={cn(
                         'flex w-full items-start gap-3 rounded-2xl border px-4 py-3.5 text-left text-sm transition-all',
-                        isRead(n.id) ? 'border-slate-100 opacity-60 dark:border-slate-850' : 'border-sda-blue/30 bg-sda-blue/5 dark:border-sda-gold/25'
+                        isRead(n.id) ? 'border-slate-100 opacity-60 dark:border-slate-900' : 'border-sda-blue/30 bg-sda-blue/5 dark:border-sda-gold/25'
                       )}
                     >
                       <span
@@ -635,8 +630,8 @@ const CommunicationHub: React.FC = () => {
                         )}
                       />
                       <div className="flex-1 min-w-0">
-                        <p className="font-bold text-slate-850 dark:text-white leading-snug">{n.title}</p>
-                        <p className="text-xs text-slate-550 dark:text-slate-400 mt-1 leading-relaxed">{n.body}</p>
+                        <p className="font-bold text-slate-900 dark:text-white leading-snug">{n.title}</p>
+                        <p className="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">{n.body}</p>
                         <p className="mt-2 text-[9px] text-slate-400 font-extrabold tracking-wide uppercase">{new Date(n.createdAt).toLocaleString()}</p>
                       </div>
                     </button>
@@ -779,7 +774,7 @@ const CommunicationHub: React.FC = () => {
                   {attachments.length > 0 && (
                     <div className="rounded-xl border border-slate-100 dark:border-slate-800/60 p-3 space-y-1.5 bg-slate-50/30 dark:bg-slate-900/35">
                       {attachments.map((file, idx) => (
-                        <div key={idx} className="flex justify-between items-center text-xs font-bold text-slate-650 dark:text-slate-350">
+                        <div key={idx} className="flex justify-between items-center text-xs font-bold text-slate-700 dark:text-slate-400">
                           <div className="flex items-center gap-2">
                             <FileText size={14} className="text-sda-blue dark:text-sda-gold" />
                             <span>{file.name}</span>
@@ -810,7 +805,7 @@ const CommunicationHub: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => insertText('**', '**')}
-                        className="p-1.5 rounded-lg text-slate-650 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-850 hover:text-slate-900 transition-colors"
+                        className="p-1.5 rounded-lg text-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 transition-colors"
                         title={t('communication.formatBold')}
                       >
                         <Bold size={14} />
@@ -818,7 +813,7 @@ const CommunicationHub: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => insertText('*', '*')}
-                        className="p-1.5 rounded-lg text-slate-650 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-850 hover:text-slate-900 transition-colors"
+                        className="p-1.5 rounded-lg text-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 transition-colors"
                         title={t('communication.formatItalic')}
                       >
                         <Italic size={14} />
@@ -826,7 +821,7 @@ const CommunicationHub: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => insertText('# ', '')}
-                        className="p-1.5 rounded-lg text-slate-650 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-850 hover:text-slate-900 transition-colors"
+                        className="p-1.5 rounded-lg text-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 transition-colors"
                         title={t('communication.formatH1')}
                       >
                         <Heading1 size={14} />
@@ -834,7 +829,7 @@ const CommunicationHub: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => insertText('## ', '')}
-                        className="p-1.5 rounded-lg text-slate-650 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-850 hover:text-slate-900 transition-colors"
+                        className="p-1.5 rounded-lg text-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 transition-colors"
                         title={t('communication.formatH2')}
                       >
                         <Heading2 size={14} />
@@ -842,7 +837,7 @@ const CommunicationHub: React.FC = () => {
                       <button
                         type="button"
                         onClick={() => insertText('- ', '')}
-                        className="p-1.5 rounded-lg text-slate-650 dark:text-slate-350 hover:bg-slate-100 dark:hover:bg-slate-850 hover:text-slate-900 transition-colors"
+                        className="p-1.5 rounded-lg text-slate-700 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-900 hover:text-slate-900 transition-colors"
                         title={t('communication.formatBulletList')}
                       >
                         <List size={14} />

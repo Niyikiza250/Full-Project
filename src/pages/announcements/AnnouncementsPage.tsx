@@ -14,7 +14,6 @@ import {
   Plus,
   Search,
   Filter,
-  X,
   Send,
   Trash2,
   ChevronDown,

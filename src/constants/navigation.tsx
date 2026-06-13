@@ -5,18 +5,22 @@ import {
   Users,
   Calendar,
   UserCheck,
-  Church,
   Map,
   Activity,
   FileText,
   Megaphone,
-  ClipboardList,
-  UserPlus,
-  Clock,
-  Heart,
-  FolderOpen,
-  ListChecks,
   ShieldCheck,
+  Church,
+  Building2,
+  Navigation,
+  HandHeart,
+  GraduationCap,
+  FolderOpen,
+  Bell,
+  MessagesSquare,
+  ClipboardList,
+  Medal,
+  Clock,
 } from 'lucide-react';
 
 export interface NavItem {
@@ -28,8 +32,6 @@ export interface NavItem {
 }
 
 const SUPER_ADMIN_ROLES: UserRole[] = ['SUPER_ADMIN'];
-const LEADER_ROLES: UserRole[] = ['SUPER_ADMIN', 'UNION_LEADER', 'FIELD_LEADER', 'DISTRICT_LEADER', 'CHURCH_LEADER', 'MINISTRY_LEADER'];
-const ALL_HIGHER_ROLES: UserRole[] = ['SUPER_ADMIN', 'UNION_LEADER', 'FIELD_LEADER', 'DISTRICT_LEADER', 'CHURCH_LEADER'];
 
 export const NAVIGATION_CONFIG: NavItem[] = [
   // Dashboard - ALL roles
@@ -40,11 +42,29 @@ export const NAVIGATION_CONFIG: NavItem[] = [
     roles: 'ALL',
   },
 
-  // ===== SUPER ADMIN ONLY =====
+  // ===== SUPER ADMIN & FIELD ADMIN =====
   {
     to: ROUTES.ADMIN_USERS,
     icon: <Users size={20} />,
     labelKey: 'Users',
+    roles: ['SUPER_ADMIN', 'FIELD_ADMINISTRATOR'],
+  },
+  {
+    to: ROUTES.ADMIN_FIELDS,
+    icon: <Building2 size={20} />,
+    labelKey: 'Fields',
+    roles: SUPER_ADMIN_ROLES,
+  },
+  {
+    to: ROUTES.ADMIN_DISTRICTS,
+    icon: <Map size={20} />,
+    labelKey: 'Districts',
+    roles: SUPER_ADMIN_ROLES,
+  },
+  {
+    to: ROUTES.ADMIN_CHURCHES,
+    icon: <Church size={20} />,
+    labelKey: 'Churches',
     roles: SUPER_ADMIN_ROLES,
   },
   {
@@ -64,6 +84,49 @@ export const NAVIGATION_CONFIG: NavItem[] = [
     icon: <Megaphone size={20} />,
     labelKey: 'Announcements',
     roles: SUPER_ADMIN_ROLES,
+  },
+  // ===== FIELD ADMINISTRATOR =====
+  {
+    to: ROUTES.MEMBERS,
+    icon: <Users size={20} />,
+    labelKey: 'Members',
+    roles: ['FIELD_ADMINISTRATOR'],
+  },
+  {
+    to: ROUTES.DISTRICTS,
+    icon: <Map size={20} />,
+    labelKey: 'Districts',
+    roles: ['FIELD_ADMINISTRATOR'],
+  },
+  {
+    to: ROUTES.CHURCHES,
+    icon: <Church size={20} />,
+    labelKey: 'Churches',
+    roles: ['FIELD_ADMINISTRATOR'],
+  },
+  {
+    to: ROUTES.EVENTS,
+    icon: <Calendar size={20} />,
+    labelKey: 'Events',
+    roles: ['FIELD_ADMINISTRATOR'],
+  },
+  {
+    to: ROUTES.REPORTS,
+    icon: <FileText size={20} />,
+    labelKey: 'Reports & Analytics',
+    roles: ['FIELD_ADMINISTRATOR'],
+  },
+  {
+    to: ROUTES.ANNOUNCEMENTS,
+    icon: <Megaphone size={20} />,
+    labelKey: 'Announcements',
+    roles: ['FIELD_ADMINISTRATOR'],
+  },
+  {
+    to: ROUTES.TASKS,
+    icon: <ClipboardList size={20} />,
+    labelKey: 'Tasks',
+    roles: ['FIELD_ADMINISTRATOR'],
   },
   // ===== UNION LEADER =====
   {
@@ -204,5 +267,42 @@ export const NAVIGATION_CONFIG: NavItem[] = [
     icon: <Calendar size={20} />,
     labelKey: 'Events',
     roles: ['VOLUNTEER'],
+  },
+  // ===== NEW MODULES =====
+  {
+    to: ROUTES.PRAYER_COUNSELING,
+    icon: <HandHeart size={20} />,
+    labelKey: 'Prayer & Counseling',
+    roles: ['SUPER_ADMIN', 'FIELD_ADMINISTRATOR', 'CHURCH_LEADER', 'MINISTRY_LEADER', 'MEMBER', 'VOLUNTEER'],
+  },
+  {
+    to: ROUTES.TRAINING,
+    icon: <GraduationCap size={20} />,
+    labelKey: 'Training',
+    roles: ['SUPER_ADMIN', 'FIELD_ADMINISTRATOR', 'CHURCH_LEADER', 'MINISTRY_LEADER', 'MEMBER', 'VOLUNTEER'],
+  },
+  {
+    to: ROUTES.DOCUMENTS,
+    icon: <FolderOpen size={20} />,
+    labelKey: 'Documents',
+    roles: ['SUPER_ADMIN', 'FIELD_ADMINISTRATOR', 'CHURCH_LEADER', 'MINISTRY_LEADER'],
+  },
+  {
+    to: ROUTES.FORUMS,
+    icon: <MessagesSquare size={20} />,
+    labelKey: 'Forums',
+    roles: 'ALL',
+  },
+  {
+    to: ROUTES.VOLUNTEER_HOURS,
+    icon: <Clock size={20} />,
+    labelKey: 'Service Hours',
+    roles: ['SUPER_ADMIN', 'FIELD_ADMINISTRATOR', 'MINISTRY_LEADER', 'VOLUNTEER'],
+  },
+  {
+    to: ROUTES.VOLUNTEER_RECOGNITION,
+    icon: <Medal size={20} />,
+    labelKey: 'Recognition',
+    roles: ['SUPER_ADMIN', 'FIELD_ADMINISTRATOR', 'MINISTRY_LEADER', 'VOLUNTEER'],
   },
 ];

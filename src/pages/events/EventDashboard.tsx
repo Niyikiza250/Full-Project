@@ -91,7 +91,7 @@ const EventDashboard: React.FC = () => {
               {t('event.managementSubtitle')}
             </motion.p>
         </div>
-        {user?.role === 'ADMIN' && (
+        {user?.role === 'SUPER_ADMIN' && (
           <Link
             to={ROUTES.EVENT_ADD}
             className="bg-sda-blue hover:bg-sda-blue-dark text-white px-5 py-2.5 rounded-xl shadow-lg flex items-center gap-2 font-bold transition-all transform hover:-translate-y-0.5 active:scale-95"

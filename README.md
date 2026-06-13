@@ -1,6 +1,3 @@
-<<<<<<< HEAD
-"# New-one" 
-=======
 # MIFEM Management Information System (MIFEM MIS)
 
 Professional enterprise-level web application for the Rwanda Union Mission of the Seventh-day Adventist Church.
@@ -43,4 +40,3 @@ Professional enterprise-level web application for the Rwanda Union Mission of th
 - Functional Components with Hooks.
 - Centralized API Management.
 - Secure Form Validation.
->>>>>>> 2c0920268c223490c8ebb14ce1b18339f6ba1048

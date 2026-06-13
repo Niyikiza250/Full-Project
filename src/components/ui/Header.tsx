@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useThemeStore } from '@/store/useThemeStore';
@@ -24,18 +24,16 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNotificationReadStore } from '@/store/useNotificationReadStore';
 import { useHierarchicalAnnouncements } from '@/hooks/useCommunicationModule';
 import { MifemLogo } from './MifemLogo';
+import { AdventistLogo } from '@/components/common/AdventistLogo';
+import { MobileMenu } from '@/components/common/MobileMenu';
 import { setPreferredLanguage } from '@/lib/language';
 
 interface HeaderProps {
   setIsMobileOpen?: (open: boolean) => void;
-  hasSidebarLayout?: boolean;
-  isSidebarCollapsed?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   setIsMobileOpen,
-  hasSidebarLayout = false,
-  isSidebarCollapsed = false,
 }) => {
   const { t, i18n } = useTranslation();
   const { user, logout } = useAuthStore();
@@ -85,14 +83,14 @@ export const Header: React.FC<HeaderProps> = ({
         )}
 
         <Link to={ROUTES.DASHBOARD} className="hover:opacity-80 transition-opacity shrink-0">
-          <MifemLogo size="sm" className="sm:hidden" />
+          <MifemLogo size="sm" className="sm:hidden" iconOnly />
           <MifemLogo size="md" className="hidden sm:flex lg:hidden" />
           <MifemLogo size="lg" className="hidden lg:flex" />
         </Link>
       </div>
 
-      {/* Right side Actions */}
-      <div className="flex items-center gap-0.5 md:gap-1.5 lg:gap-3 shrink-0">
+      {/* Right side Actions - hidden on mobile, accessible via MobileMenu */}
+      <div className="hidden md:flex items-center gap-0.5 md:gap-1.5 lg:gap-3 shrink-0">
         {/* Language Selector */}
         <div className="relative">
           <button
@@ -174,7 +172,7 @@ export const Header: React.FC<HeaderProps> = ({
                           {t('communication.tabNotifications')}
                         </span>
                         {unreadCount > 0 && (
-                          <span className="text-[10px] bg-red-100 dark:bg-red-950/60 text-red-650 dark:text-red-400 font-black px-2 py-0.5 rounded-full">
+                          <span className="text-[10px] bg-red-100 dark:bg-red-950/60 text-red-700 dark:text-red-400 font-black px-2 py-0.5 rounded-full">
                             {unreadCount} {t('common.unread').toLowerCase()}
                           </span>
                         )}
@@ -209,7 +207,7 @@ export const Header: React.FC<HeaderProps> = ({
                               <div className="flex-1 min-w-0">
                                 <p className={cn(
                                   'text-xs leading-snug',
-                                  !isRead(item.id) ? 'font-black text-slate-900 dark:text-white' : 'font-medium text-slate-650 dark:text-slate-450'
+                                  !isRead(item.id) ? 'font-black text-slate-900 dark:text-white' : 'font-medium text-slate-700 dark:text-slate-500'
                                 )}>
                                   {item.title}
                                 </p>
@@ -326,7 +324,7 @@ export const Header: React.FC<HeaderProps> = ({
                           <User size={14} className="text-slate-400" />
                           {t('nav.profile')}
                         </Link>
-                        {user?.role === 'SUPER_ADMIN' && (
+                        {(user?.role === 'SUPER_ADMIN' || user?.role === 'FIELD_ADMINISTRATOR') && (
                           <Link
                             to={ROUTES.SETTINGS}
                             onClick={() => setProfileDropdownOpen(false)}
@@ -361,7 +359,13 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </div>
       </div>
+
+      {/* Mobile: Adventist Logo + Three-dot Menu */}
+      <div className="flex md:hidden items-center gap-2 shrink-0">
+        <AdventistLogo compact />
+        <MobileMenu />
       </div>
+    </div>
     </header>
   );
 };

@@ -70,7 +70,7 @@ export const MOCK_EVENTS: Event[] = [
     id: 'e4',
     title: 'Union Evangelism Conference',
     description: 'Annual evangelism planning and outreach training for all fields.',
-    category: 'Field',
+    category: 'FIELD',
     status: 'UPCOMING',
     startDate: '2026-07-22T08:00:00',
     endDate: '2026-07-24T16:00:00',

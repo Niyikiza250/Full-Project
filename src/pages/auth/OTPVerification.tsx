@@ -1,8 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ROUTES } from '@/constants/routes';
-import { ShieldCheck, Loader2, ArrowLeft } from 'lucide-react';
+import { ShieldCheck, Loader2, ArrowLeft, Mail } from 'lucide-react';
 
 const OTPVerification: React.FC = () => {
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
@@ -10,7 +10,13 @@ const OTPVerification: React.FC = () => {
   const [timer, setTimer] = useState(60);
   const inputs = useRef<(HTMLInputElement | null)[]>([]);
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
+  const email = (location.state as { email?: string })?.email;
+
+  useEffect(() => {
+    if (!email) navigate(ROUTES.FORGOT_PASSWORD, { replace: true });
+  }, [email, navigate]);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -24,7 +30,6 @@ const OTPVerification: React.FC = () => {
 
     setOtp([...otp.map((d, idx) => (idx === index ? element.value : d))]);
 
-    // Focus next input
     if (element.value !== '' && index < 5) {
       inputs.current[index + 1]?.focus();
     }
@@ -42,11 +47,9 @@ const OTPVerification: React.FC = () => {
     if (otpCode.length !== 6) return;
 
     setIsLoading(true);
-    // Simulate API call
-    console.log('Verifying OTP:', otpCode);
     await new Promise((resolve) => setTimeout(resolve, 1500));
     setIsLoading(false);
-    navigate(ROUTES.DASHBOARD);
+    navigate(ROUTES.RESET_PASSWORD, { state: { email } });
   };
 
   return (
@@ -59,6 +62,12 @@ const OTPVerification: React.FC = () => {
         </div>
         <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t('auth.otpHeading')}</h2>
         <p className="text-sm text-slate-500 mt-1">{t('auth.otpSubtitle')}</p>
+        {email && (
+          <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-sda-blue/10 px-3 py-1 text-xs font-semibold text-sda-blue dark:bg-sda-gold/10 dark:text-sda-gold">
+            <Mail size={12} />
+            {email}
+          </p>
+        )}
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
@@ -99,7 +108,7 @@ const OTPVerification: React.FC = () => {
           {timer > 0 ? (
             <span className="font-semibold text-sda-blue">{t('auth.otpResendIn', { seconds: timer })}</span>
           ) : (
-            <button className="font-semibold text-sda-blue hover:underline">{t('auth.otpResend')}</button>
+            <button onClick={() => setTimer(60)} className="font-semibold text-sda-blue hover:underline">{t('auth.otpResend')}</button>
           )}
         </p>
         

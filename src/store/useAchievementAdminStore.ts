@@ -28,9 +28,16 @@ export const useAchievementAdminStore = create<AchievementAdminState>()(
       loadedFromStatic: false,
       loadMocks: () => set({ items: [...MOCK_ACHIEVEMENTS], revision: 0 }),
       loadFromStatic: async () => {
-        const staticItems = await listAchievements();
-        if (staticItems.length > 0) {
-          set({ items: staticItems, loadedFromStatic: true, revision: 0 });
+        try {
+          const staticItems = await listAchievements();
+          if (staticItems.length > 0) {
+            const hasApproved = staticItems.some((i) => i.status === 'APPROVED');
+            if (hasApproved) {
+              set({ items: staticItems, loadedFromStatic: true, revision: get().revision + 1 });
+            }
+          }
+        } catch {
+          console.warn('Failed to load achievements from API, using local data');
         }
       },
       addItem: async (item) => {

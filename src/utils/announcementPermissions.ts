@@ -22,6 +22,10 @@ export function getTargetRolesForSender(senderRole: UserRole): AllowedTargets {
       return [
         { roles: ['FIELD_LEADER'], label: 'Conference Leaders' },
       ];
+    case 'FIELD_ADMINISTRATOR':
+      return [
+        { roles: ['FIELD_LEADER'], label: 'Conference Leaders' },
+      ];
     case 'FIELD_LEADER':
       return [
         { roles: ['DISTRICT_LEADER'], label: 'District Leaders' },
@@ -53,6 +57,7 @@ export function canSenderTarget(senderRole: UserRole, targetRole: UserRole): boo
 export const ROLE_LABELS: Record<UserRole, string> = {
   SUPER_ADMIN: 'Super Admin',
   UNION_LEADER: 'Union Leader',
+  FIELD_ADMINISTRATOR: 'Field Administrator',
   FIELD_LEADER: 'Conference Leader',
   DISTRICT_LEADER: 'District Leader',
   CHURCH_LEADER: 'Church Leader',

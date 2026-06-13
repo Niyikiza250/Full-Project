@@ -1,9 +1,9 @@
-export type AppLanguage = 'en' | 'rw';
+export type AppLanguage = 'en' | 'rw' | 'fr';
 
 export const PERSONAL_LANGUAGE_KEY = 'mifem-lang';
 export const DEFAULT_LANGUAGE_KEY = 'mifem-default-lang';
 
-const SUPPORTED_LANGUAGES: AppLanguage[] = ['en', 'rw'];
+const SUPPORTED_LANGUAGES: AppLanguage[] = ['en', 'rw', 'fr'];
 
 function isSupportedLanguage(value: string | null): value is AppLanguage {
   return value !== null && SUPPORTED_LANGUAGES.includes(value as AppLanguage);

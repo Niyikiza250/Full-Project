@@ -10,7 +10,7 @@ import { Lock, Loader2, ShieldAlert } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const ForcePasswordChange: React.FC = () => {
-  const { completePasswordChange, logout, user } = useAuthStore();
+  const { completePasswordChange, logout } = useAuthStore();
   const navigate = useNavigate();
   const { t } = useTranslation();
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -28,7 +28,7 @@ const ForcePasswordChange: React.FC = () => {
     resolver: zodResolver(changePasswordSchema),
   });
 
-  const onSubmit = async (data: ChangePasswordFormValues) => {
+  const onSubmit = async (_data: ChangePasswordFormValues) => {
     try {
       setErrorMsg(null);
       // Simulate API saving the new hashed password
@@ -75,7 +75,7 @@ const ForcePasswordChange: React.FC = () => {
               {t('auth.forcePasswordNewLabel')}
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-450 dark:text-slate-500" size={16} />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-500" size={16} />
               <input
                 {...register('password')}
                 type="password"
@@ -93,7 +93,7 @@ const ForcePasswordChange: React.FC = () => {
               {t('auth.forcePasswordConfirmLabel')}
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-450 dark:text-slate-500" size={16} />
+              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 dark:text-slate-500" size={16} />
               <input
                 {...register('confirmPassword')}
                 type="password"
@@ -125,7 +125,7 @@ const ForcePasswordChange: React.FC = () => {
             <button
               type="button"
               onClick={() => logout()}
-              className="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-350 font-bold py-2.5 rounded-xl text-xs transition-all cursor-pointer"
+              className="w-full bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-400 font-bold py-2.5 rounded-xl text-xs transition-all cursor-pointer"
             >
               {t('auth.forcePasswordCancelButton')}
             </button>

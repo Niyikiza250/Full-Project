@@ -1,9 +1,9 @@
 import type { AchievementItem } from '@/types/achievement';
 
-const ACCHIEVEMENT_API = '/api/acchievement';
+const ACHIEVEMENT_API = '/api/achievement';
 
 export async function saveAchievementData(item: AchievementItem): Promise<void> {
-  await fetch(`${ACCHIEVEMENT_API}/data/${item.id}.json`, {
+  await fetch(`${ACHIEVEMENT_API}/data/${item.id}.json`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(item, null, 2),
@@ -11,21 +11,22 @@ export async function saveAchievementData(item: AchievementItem): Promise<void> 
 }
 
 export async function saveAchievementImage(itemId: string, dataUrl: string): Promise<string> {
-  const res = await fetch(`${ACCHIEVEMENT_API}/images/${itemId}.png`, {
+  const res = await fetch(`${ACHIEVEMENT_API}/images/${itemId}.png`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ dataUrl }),
   });
-  const { path } = await res.json();
-  return path;
+  const resData = await res.json();
+  if (!resData.path) throw new Error('Failed to upload achievement image');
+  return resData.path;
 }
 
 export async function deleteAchievementData(id: string): Promise<void> {
-  await fetch(`${ACCHIEVEMENT_API}/data/${id}.json`, { method: 'DELETE' });
+  await fetch(`${ACHIEVEMENT_API}/data/${id}.json`, { method: 'DELETE' });
 }
 
 export async function listAchievements(): Promise<AchievementItem[]> {
-  const res = await fetch(`${ACCHIEVEMENT_API}/data`);
+  const res = await fetch(`${ACHIEVEMENT_API}/data`);
   if (!res.ok) return [];
   return res.json();
 }

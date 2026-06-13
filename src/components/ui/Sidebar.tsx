@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/useAuthStore';
 import { NAVIGATION_CONFIG, NavItem } from '@/constants/navigation';
 import { cn } from '@/lib/utils';
-import { ChevronDown, ChevronRight, Menu, X, LogOut, ChevronLeft } from 'lucide-react';
+import { ChevronDown, ChevronRight, X, LogOut, ChevronLeft } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 interface SidebarProps {
   isCollapsed: boolean;

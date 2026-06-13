@@ -12,7 +12,7 @@ export const MinistryLeaderDashboard: React.FC = () => {
   const userChurchName = useMemo(() => {
     if (!user?.churchId) return undefined;
     return MOCK_CHURCHES.find(c => c.id === user.churchId)?.name;
-  }, [user?.churchId]);
+  }, [user]);
 
   const memberCount = useMemo(() => {
     if (!userChurchName) return '—';

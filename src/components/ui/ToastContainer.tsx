@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { useNotificationStore, ToastItem } from '@/store/useNotificationStore';
 import { useAudioChime } from '@/hooks/useAudioChime';
 import { 
-  Bell, CheckCircle, AlertTriangle, XCircle, Info, Megaphone, X, Key, UserCheck 
+  CheckCircle, AlertTriangle, XCircle, Info, Megaphone, X 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -94,7 +94,7 @@ const ToastCard: React.FC<ToastCardProps> = ({ toast, onDismiss }) => {
           <h4 className="text-xs font-black text-slate-800 dark:text-slate-100 tracking-tight leading-snug truncate">
             {title}
           </h4>
-          <p className="text-[11px] font-semibold text-slate-650 dark:text-slate-350 leading-relaxed mt-0.5 line-clamp-2">
+          <p className="text-[11px] font-semibold text-slate-700 dark:text-slate-400 leading-relaxed mt-0.5 line-clamp-2">
             {body}
           </p>
         </div>

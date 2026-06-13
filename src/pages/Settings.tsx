@@ -7,13 +7,13 @@ import { useFontSizeStore } from '@/store/useFontSizeStore';
 import { usePhotoStore } from '@/store/usePhotoStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { getSystemDefaultLanguage, setPreferredLanguage, setSystemDefaultLanguage, type AppLanguage } from '@/lib/language';
-import { getDefaultLanguageSetting, saveDefaultLanguageSetting } from '@/api/systemSettings';
+import { getDefaultLanguageSetting, saveDefaultLanguageSetting, getSmtpConfig, saveSmtpConfig, testSmtpConnection } from '@/api/systemSettings';
 import { ROUTES } from '@/constants/routes';
 import { useNavigate, Navigate } from 'react-router-dom';
 import { 
   Settings as SettingsIcon, Sun, Moon, Languages, Bell, Shield, 
-  Smartphone, Eye, HelpCircle, LogOut, CheckCircle2, User, Key, ImageUp, Trash2,
-  Plus, Minus
+  Eye, CheckCircle2, ImageUp, Trash2,
+  Plus, Minus, Mail, Loader2, XCircle
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 
@@ -26,10 +26,6 @@ export const Settings: React.FC = () => {
   const { fontSize, increaseFontSize, decreaseFontSize } = useFontSizeStore();
   const { addPhoto } = usePhotoStore();
   const navigate = useNavigate();
-
-  if (user?.role !== 'SUPER_ADMIN') {
-    return <Navigate to={ROUTES.UNAUTHORIZED} replace />;
-  }
 
   const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -67,6 +63,22 @@ export const Settings: React.FC = () => {
   const [highContrast, setHighContrast] = useState(false);
   const [largeText, setLargeText] = useState(false);
   
+  // SMTP config
+  const [smtpConfig, setSmtpConfig] = useState({
+    host: '',
+    port: 587,
+    secure: false,
+    user: '',
+    pass: '',
+    from: '',
+    fromName: '',
+  });
+  const [smtpLoading, setSmtpLoading] = useState(true);
+  const [smtpSaving, setSmtpSaving] = useState(false);
+  const [smtpSaved, setSmtpSaved] = useState(false);
+  const [smtpTesting, setSmtpTesting] = useState(false);
+  const [smtpTestResult, setSmtpTestResult] = useState<{ ok: boolean; msg?: string } | null>(null);
+
   // Message states
   const [settingsSuccess, setSettingsSuccess] = useState(false);
   const [defaultLanguage, setDefaultLanguageState] = useState<AppLanguage>(getSystemDefaultLanguage());
@@ -100,6 +112,23 @@ export const Settings: React.FC = () => {
     };
   }, []);
 
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      try {
+        const cfg = await getSmtpConfig();
+        if (active && cfg) {
+          setSmtpConfig(cfg);
+        }
+      } catch {
+        // ignore
+      } finally {
+        if (active) setSmtpLoading(false);
+      }
+    })();
+    return () => { active = false; };
+  }, []);
+
   const handleSetDefaultLanguage = async () => {
     setIsSavingDefaultLanguage(true);
 
@@ -115,6 +144,34 @@ export const Settings: React.FC = () => {
     }
   };
 
+  const handleSaveSmtp = async () => {
+    setSmtpSaving(true);
+    try {
+      await saveSmtpConfig(smtpConfig);
+      setSmtpSaved(true);
+      setTimeout(() => setSmtpSaved(false), 3000);
+    } finally {
+      setSmtpSaving(false);
+    }
+  };
+
+  const handleTestSmtp = async () => {
+    setSmtpTesting(true);
+    setSmtpTestResult(null);
+    try {
+      const res = await testSmtpConnection(smtpConfig);
+      if (res.success) {
+        setSmtpTestResult({ ok: true, msg: 'Test email sent successfully' + (res.previewUrl ? ` (Ethereal preview: ${res.previewUrl})` : '') });
+      } else {
+        setSmtpTestResult({ ok: false, msg: res.error || 'Connection failed' });
+      }
+    } catch {
+      setSmtpTestResult({ ok: false, msg: 'Network error' });
+    } finally {
+      setSmtpTesting(false);
+    }
+  };
+
   const handleSaveSettings = () => {
     setSettingsSuccess(true);
     setTimeout(() => {
@@ -122,6 +179,10 @@ export const Settings: React.FC = () => {
       navigate(ROUTES.DASHBOARD);
     }, 1500);
   };
+
+  if (user?.role !== 'SUPER_ADMIN') {
+    return <Navigate to={ROUTES.UNAUTHORIZED} replace />;
+  }
 
   const activeSessions = [
     { id: 1, device: 'Chrome / Windows 11', location: 'Kigali, RW', current: true },
@@ -495,6 +556,122 @@ export const Settings: React.FC = () => {
                 </div>
               </div>
             </div>
+          </div>
+
+          {/* SMTP Configuration */}
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xs p-6 space-y-5">
+            <h3 className="font-extrabold text-lg text-slate-800 dark:text-white flex items-center gap-2">
+              <Mail size={18} className="text-sda-blue dark:text-sda-gold" />
+              SMTP Configuration
+            </h3>
+            {smtpLoading ? (
+              <p className="text-xs text-slate-400">Loading…</p>
+            ) : (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1">Host</label>
+                    <input
+                      type="text"
+                      value={smtpConfig.host}
+                      onChange={(e) => setSmtpConfig(p => ({ ...p, host: e.target.value }))}
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sda-blue"
+                      placeholder="smtp.example.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1">Port</label>
+                    <input
+                      type="number"
+                      value={smtpConfig.port}
+                      onChange={(e) => setSmtpConfig(p => ({ ...p, port: parseInt(e.target.value) || 0 }))}
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sda-blue"
+                      placeholder="587"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1">Username</label>
+                    <input
+                      type="text"
+                      value={smtpConfig.user}
+                      onChange={(e) => setSmtpConfig(p => ({ ...p, user: e.target.value }))}
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sda-blue"
+                      placeholder="user@example.com"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1">Password</label>
+                    <input
+                      type="password"
+                      value={smtpConfig.pass}
+                      onChange={(e) => setSmtpConfig(p => ({ ...p, pass: e.target.value }))}
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sda-blue"
+                      placeholder="••••••••"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1">From Email</label>
+                    <input
+                      type="email"
+                      value={smtpConfig.from || ''}
+                      onChange={(e) => setSmtpConfig(p => ({ ...p, from: e.target.value }))}
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sda-blue"
+                      placeholder="noreply@mifem.org"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-600 dark:text-slate-400 mb-1">From Name</label>
+                    <input
+                      type="text"
+                      value={smtpConfig.fromName || ''}
+                      onChange={(e) => setSmtpConfig(p => ({ ...p, fromName: e.target.value }))}
+                      className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-transparent px-3 py-2 text-xs font-semibold text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-sda-blue"
+                      placeholder="MIFEM"
+                    />
+                  </div>
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={smtpConfig.secure}
+                    onChange={(e) => setSmtpConfig(p => ({ ...p, secure: e.target.checked }))}
+                    className="rounded border-slate-300 text-sda-blue focus:ring-sda-blue h-4 w-4"
+                  />
+                  <span className="text-xs font-bold text-slate-700 dark:text-slate-200">Use SSL/TLS (port 465)</span>
+                </label>
+                <div className="flex items-center gap-3 pt-2">
+                  <button
+                    type="button"
+                    onClick={handleSaveSmtp}
+                    disabled={smtpSaving}
+                    className="bg-sda-blue hover:bg-sda-blue-dark dark:bg-sda-gold dark:hover:bg-sda-gold-light dark:text-sda-blue font-bold text-white text-xs px-5 py-2.5 rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-60 flex items-center gap-2"
+                  >
+                    {smtpSaving ? <Loader2 size={14} className="animate-spin" /> : null}
+                    Save SMTP Config
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleTestSmtp}
+                    disabled={smtpTesting}
+                    className="border border-slate-200 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800 font-bold text-slate-700 dark:text-slate-300 text-xs px-5 py-2.5 rounded-xl shadow-sm transition-all cursor-pointer disabled:opacity-60 flex items-center gap-2"
+                  >
+                    {smtpTesting ? <Loader2 size={14} className="animate-spin" /> : null}
+                    Test Connection
+                  </button>
+                </div>
+                {smtpSaved && (
+                  <p className="text-[10px] font-semibold text-green-600 dark:text-green-400 flex items-center gap-1">
+                    <CheckCircle2 size={12} /> SMTP configuration saved.
+                  </p>
+                )}
+                {smtpTestResult && (
+                  <p className={`text-[10px] font-semibold flex items-center gap-1 ${smtpTestResult.ok ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+                    {smtpTestResult.ok ? <CheckCircle2 size={12} /> : <XCircle size={12} />}
+                    {smtpTestResult.msg}
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {settingsSuccess && (

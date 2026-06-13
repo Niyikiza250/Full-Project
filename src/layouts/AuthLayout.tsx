@@ -90,16 +90,11 @@ const AuthLayout: React.FC = () => {
       </header>
       <div className="flex-1 flex items-center justify-center p-4 sm:p-6 md:p-8">
         <div className="w-full max-w-lg mx-auto bg-white dark:bg-slate-900 rounded-2xl shadow-xl overflow-hidden border border-slate-200 dark:border-slate-800">
-          <div className="relative bg-sda-blue p-6 sm:p-8 text-white text-center overflow-hidden">
-            <img
-              src="/upload/MIFEM-2.webp"
-              alt=""
-              className="absolute inset-0 w-full h-full object-cover opacity-20"
-            />
-            <div className="relative z-10">
+          <div className="p-6 sm:p-8 text-center">
+            <div>
               <MifemLogo size="xl" className="justify-center mb-4" iconOnly />
-              <h1 className="text-2xl font-bold tracking-tight">{t('app.name')}</h1>
-              <p className="text-sda-gold-light text-sm mt-1">{t('auth.authLayoutSubtitle')}</p>
+              <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">{t('app.name')}</h1>
+              <p className="text-slate-500 text-sm mt-1">{t('auth.authLayoutSubtitle')}</p>
             </div>
           </div>
           <div className="p-6 sm:p-8">

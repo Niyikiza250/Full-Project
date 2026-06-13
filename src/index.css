@@ -63,3 +63,21 @@ html {
   clip: auto;
   white-space: normal;
 }
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(215, 16%, 70%);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: hsl(215, 16%, 50%);
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: hsl(215, 16%, 30%);
+}

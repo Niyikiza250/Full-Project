@@ -1,5 +1,5 @@
 import React from 'react';
-import { Users, Church, Calendar, UserPlus, Megaphone, Bell, FileText, CheckCircle, Clock } from 'lucide-react';
+import { Users, Church, Calendar, UserPlus, FileText, CheckCircle, Clock } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/constants/routes';
 

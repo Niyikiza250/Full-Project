@@ -12,13 +12,7 @@ import { useBlueCardStore } from '@/store/useBlueCardStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { BlueCardAdminPanel } from '@/components/dashboard/BlueCardAdminPanel';
 
-const ATTENDANCE_HISTORY = [
-  { day: 'S1', present: 1 },
-  { day: 'S2', present: 1 },
-  { day: 'S3', present: 0 },
-  { day: 'S4', present: 1 },
-  { day: 'S5', present: 1 },
-];
+
 
 export const MemberDashboard: React.FC = () => {
   const { data: announcements, isLoading } = useHierarchicalAnnouncements();
@@ -37,7 +31,6 @@ export const MemberDashboard: React.FC = () => {
     ? MOCK_CHURCHES.filter((c) => c.districtId === memberDistrict.id).map((c) => c.id)
     : [memberChurchId];
   const classOptions = MOCK_CLASSES.filter((c) => districtChurchIds.includes(c.churchId));
-  const selectedClass = MOCK_CLASSES.find((c) => c.id === selectedClassId);
 
   const card = useBlueCardStore((s) => s.cards.find((c) => c.id === s.activeCardId));
   const missionWords = card?.missionWords ?? [];
@@ -240,7 +233,7 @@ const MemberKPI = ({ title, value, desc, icon }: any) => (
 
 const AttendanceLogItem = ({ title, present, time }: any) => {
   return (
-  <div className="flex justify-between items-center border-b border-slate-50 dark:border-slate-850 pb-2">
+  <div className="flex justify-between items-center border-b border-slate-50 dark:border-slate-900 pb-2">
     <div>
       <p className="font-bold text-slate-800 dark:text-slate-200">{title}</p>
       <span className="text-[9px] text-slate-400 font-semibold">{time}</span>
@@ -364,7 +357,7 @@ const MemberEventItem = ({ title, desc, date }: any) => (
     </div>
     <div className="bg-white dark:bg-slate-700 shadow-2xs rounded-lg px-2 py-1 text-center shrink-0">
       <span className="text-[10px] font-extrabold text-sda-blue dark:text-sda-gold block leading-none">{date.split(' ')[0]}</span>
-      <span className="text-[8px] font-extrabold text-slate-400 dark:text-slate-350 block mt-0.5">{date.split(' ')[1] || ''}</span>
+      <span className="text-[8px] font-extrabold text-slate-400 dark:text-slate-400 block mt-0.5">{date.split(' ')[1] || ''}</span>
     </div>
   </div>
 );

@@ -1,12 +1,10 @@
 import React from 'react';
-import { useTranslation } from 'react-i18next';
 import { 
   Users, UserCheck, HeartHandshake, Award, Plus, Calendar, 
-  MessageSquare, Settings, Play, ArrowRight, BellRing, Megaphone
+  Play, ArrowRight, Megaphone
 } from 'lucide-react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
 import { useHierarchicalAnnouncements } from '@/hooks/useCommunicationModule';
-import { useNotificationStore } from '@/store/useNotificationStore';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/constants/routes';
 import { LeaderAchievementForm } from '@/components/leader/LeaderAchievementForm';
@@ -19,10 +17,8 @@ const CHECKIN_METHODS = [
 const COLORS = ['#003087', '#C5B358', '#475569'];
 
 export const ChurchLeaderDashboard: React.FC = () => {
-  const { t } = useTranslation();
   const { data: announcements, isLoading } = useHierarchicalAnnouncements();
   const latestAnnouncements = announcements?.slice(0, 3) || [];
-  const { addToast } = useNotificationStore();
 
   return (
     <div className="space-y-4">
@@ -96,7 +92,7 @@ export const ChurchLeaderDashboard: React.FC = () => {
               ) : latestAnnouncements.length === 0 ? (
                 <p className="text-slate-400 italic">{'No recent announcements.'}</p>
               ) : (
-                latestAnnouncements.map((a, idx) => (
+                latestAnnouncements.map((a) => (
                   <div key={a.id} className={`border-l-2 pl-3 py-0.5 ${
                     a.priority === 'URGENT' ? 'border-red-500' :
                     a.priority === 'HIGH' ? 'border-amber-500' :

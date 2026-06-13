@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/useAuthStore';
 import { getTranslatedRoleLabel } from '@/lib/roles';
 import { 
-  User, Mail, Phone, MapPin, Shield, Calendar, CheckCircle2, 
-  Camera, Key, Save, AlertCircle, Clock, ChevronRight
+  User, Phone, MapPin, Shield, Calendar, CheckCircle2, 
+  Camera, Key, Save, AlertCircle, Clock
 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import apiClient from '@/api/client';
 
 export const Profile: React.FC = () => {
   const { t } = useTranslation();
@@ -14,10 +15,29 @@ export const Profile: React.FC = () => {
   const [imageError, setImageError] = useState<string | null>(null);
 
   // Form states
-  const [name, setName] = useState(user?.name || 'John Doe');
-  const [email, setEmail] = useState(user?.email || 'john.doe@example.com');
-  const [phone, setPhone] = useState('+250 788 123 456');
-  const [location, setLocation] = useState('Kigali, Rwanda');
+  const [name, setName] = useState(user?.name || '');
+  const [email, setEmail] = useState(user?.email || '');
+  const [phone, setPhone] = useState(user?.phone || '');
+  const [location, setLocation] = useState(user?.location || '');
+
+  // Fetch fresh user data from DB on mount
+  useEffect(() => {
+    (async () => {
+      try {
+        const res = await apiClient.get('/auth/me');
+        const data = res.data.data || res.data;
+        if (data) {
+          setName(data.name || '');
+          setEmail(data.email || '');
+          setPhone(data.phone || '');
+          setLocation(data.location || '');
+          updateUserFields({ name: data.name, email: data.email, phone: data.phone, location: data.location });
+        }
+      } catch {
+        // fallback to store values
+      }
+    })();
+  }, []);
   
   // Password states
   const [currentPassword, setCurrentPassword] = useState('');
@@ -68,6 +88,8 @@ export const Profile: React.FC = () => {
         return { title: t('profile.roleAdminTitle'), details: t('profile.roleAdminDetail') };
       case 'UNION_LEADER':
         return { title: t('profile.roleUnionLeaderTitle'), details: t('profile.roleUnionLeaderDetail') };
+      case 'FIELD_ADMINISTRATOR':
+        return { title: 'Field Administrator', details: 'Manages all aspects of the assigned field including users, districts, churches, and settings.' };
       case 'FIELD_LEADER':
         return { title: t('profile.roleFieldLeaderTitle'), details: t('profile.roleFieldLeaderDetail') };
       case 'DISTRICT_LEADER':

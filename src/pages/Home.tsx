@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import { useAchievements } from '@/hooks/useAchievements';
-import { Header } from '@/components/ui/Header';
+import MainHeader from '@/components/header/MainHeader';
 import { MifemLogo } from '@/components/ui/MifemLogo';
 import { cn } from '@/lib/utils';
 import { BookOpen, ImageIcon, Landmark, Heart, Newspaper } from 'lucide-react';
@@ -36,7 +36,7 @@ const Home: React.FC = () => {
   const { t } = useTranslation();
   const [kind, setKind] = useState<AchievementKind | ''>('');
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
-  const { data: items = [], isLoading } = useAchievements(kind);
+  const items = useAchievements(kind);
 
   const kinds: (AchievementKind | '')[] = ['', 'MILESTONE', 'GALLERY', 'TESTIMONY', 'NEWS', 'STORY'];
 
@@ -50,7 +50,7 @@ const Home: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-200">
-      <Header />
+      <MainHeader />
 
       <main className="mx-auto max-w-6xl px-4 pb-12 pt-24 sm:pb-20 sm:pt-28">
         <div className="text-center mb-12 sm:mb-16">
@@ -88,13 +88,7 @@ const Home: React.FC = () => {
         </div>
 
         {/* Achievement cards - increased font sizes */}
-        {isLoading ? (
-          <div className="grid gap-8 md:grid-cols-2">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-72 sm:h-96 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 animate-pulse shadow-sm" />
-            ))}
-          </div>
-        ) : items.length === 0 ? (
+        {items.length === 0 ? (
           <div className="text-center py-16 sm:py-24 text-slate-500 dark:text-slate-400">
             <p className="text-xl sm:text-2xl font-bold">{t('achievements.noItems')}</p>
           </div>

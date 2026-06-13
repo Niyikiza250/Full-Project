@@ -24,10 +24,6 @@ const EventForm: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
 
-  if (user?.role !== 'ADMIN') {
-    return <Navigate to={ROUTES.UNAUTHORIZED} replace />;
-  }
-
   const isEdit = !!id;
   const { data: event, isLoading } = useEvent(id || '');
   const createMutation = useCreateEvent();
@@ -46,7 +42,7 @@ const EventForm: React.FC = () => {
     return z.object({
       title: z.string().min(3, t('event.validation.titleMin')),
       description: z.string().min(10, t('event.validation.descriptionMin')),
-      category: z.enum(['WORSHIP', 'Field', 'COMMUNITY', 'YOUTH', 'TRAINING', 'OTHER']),
+      category: z.enum(['WORSHIP', 'FIELD', 'COMMUNITY', 'YOUTH', 'TRAINING', 'OTHER']),
       status: z.enum(['DRAFT', 'UPCOMING', 'ONGOING', 'COMPLETED', 'CANCELLED']),
       startDate: z.string().min(1, t('event.validation.startDateRequired')),
       endDate: z.string().min(1, t('event.validation.endDateRequired')),
@@ -127,6 +123,10 @@ const EventForm: React.FC = () => {
         <Loader2 className="animate-spin text-sda-blue" size={48} />
       </div>
     );
+  }
+
+  if (user?.role !== 'SUPER_ADMIN') {
+    return <Navigate to={ROUTES.UNAUTHORIZED} replace />;
   }
 
   return (

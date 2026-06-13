@@ -2,14 +2,16 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ROUTES } from '@/constants/routes';
-import { Lock, Loader2, ShieldCheck } from 'lucide-react';
+import { Lock, Loader2, ShieldCheck, Mail } from 'lucide-react';
 
 const ResetPassword: React.FC = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
+  const email = (location.state as { email?: string })?.email;
 
   const resetPasswordSchema = z.object({
     password: z.string().min(8, t('auth.passwordMinChars', { count: 8 })),
@@ -25,8 +27,6 @@ const ResetPassword: React.FC = () => {
   });
 
   const onSubmit = async (data: ResetPasswordValues) => {
-    // Simulate API call
-    console.log('Password reset for:', data.password);
     await new Promise((resolve) => setTimeout(resolve, 2000));
     navigate(ROUTES.LOGIN);
   };
@@ -36,6 +36,12 @@ const ResetPassword: React.FC = () => {
       <div className="text-center">
         <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t('auth.resetHeading')}</h2>
         <p className="text-sm text-slate-500 mt-1">{t('auth.resetSubtitle')}</p>
+        {email && (
+          <p className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-sda-blue/10 px-3 py-1 text-xs font-semibold text-sda-blue dark:bg-sda-gold/10 dark:text-sda-gold">
+            <Mail size={12} />
+            {email}
+          </p>
+        )}
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

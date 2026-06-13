@@ -2,21 +2,22 @@ import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import { useMembers, useMemberChangeRequests, useApproveChangeRequest, useRejectChangeRequest } from '@/services/memberService';
-import { MemberStatus, MemberChangeRequest } from '@/types/member';
+import { MemberStatus } from '@/types/member';
 import { UserRole, ROUTES } from '@/constants/routes';
 import { useAuthStore } from '@/store/useAuthStore';
 import { getTranslatedRoleLabel } from '@/lib/roles';
 import { MOCK_MEMBERS } from '@/utils/mockData';
 import { MOCK_CHURCHES } from '@/data/enterpriseMocks';
 import { 
-  Search, UserPlus, Eye, Edit, Trash2, Loader2, 
-  Download, Filter, ChevronLeft, ChevronRight, MoreHorizontal,
-  CheckCircle, XCircle, Clock, AlertTriangle
+  Search, UserPlus, Eye, Edit, Trash2,
+  Download, Filter, ChevronLeft, ChevronRight,
+  CheckCircle, XCircle, Clock
 } from 'lucide-react';
 import { clsx } from 'clsx';
 
 const getHierarchyFilters = (role: UserRole | undefined, churchName?: string) => {
   switch (role) {
+    case 'FIELD_ADMINISTRATOR':
     case 'FIELD_LEADER':
       return { showField: false, showZone: true, showChurch: true, showClass: true };
     case 'DISTRICT_LEADER':
@@ -37,8 +38,7 @@ const MemberDirectory: React.FC = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const isAdmin = user?.role === 'SUPER_ADMIN';
-  const canCrud = user?.role === 'SUPER_ADMIN' || user?.role === 'CHURCH_LEADER' || user?.role === 'MINISTRY_LEADER';
+  const canCrud = user?.role === 'SUPER_ADMIN' || user?.role === 'FIELD_ADMINISTRATOR' || user?.role === 'CHURCH_LEADER' || user?.role === 'MINISTRY_LEADER';
   const isChurchLeader = user?.role === 'CHURCH_LEADER';
   const isMinistryLeader = user?.role === 'MINISTRY_LEADER';
   const userChurchName = useMemo(() => resolveChurchName(user?.churchId), [user?.churchId]);
@@ -57,6 +57,7 @@ const MemberDirectory: React.FC = () => {
   const hasMinimumSelection = (() => {
     if (isChurchLeader && userChurchName) return true;
     switch (user?.role) {
+      case 'FIELD_ADMINISTRATOR':
       case 'FIELD_LEADER':
         return zoneFilter !== '' || churchFilter !== '' || classFilter !== '';
       case 'DISTRICT_LEADER':
@@ -262,8 +263,8 @@ const MemberDirectory: React.FC = () => {
             <p className="text-sm text-slate-500 dark:text-slate-400">
               {user?.role === 'CHURCH_LEADER' && t('member.selectClassPrompt')}
               {user?.role === 'DISTRICT_LEADER' && t('member.selectChurchPrompt')}
-              {user?.role === 'FIELD_LEADER' && t('member.selectDistrictPrompt')}
-              {!['CHURCH_LEADER', 'DISTRICT_LEADER', 'FIELD_LEADER'].includes(user?.role || '') && t('member.selectFiltersPrompt')}
+              {(user?.role === 'FIELD_LEADER' || user?.role === 'FIELD_ADMINISTRATOR') && t('member.selectDistrictPrompt')}
+              {!['CHURCH_LEADER', 'DISTRICT_LEADER', 'FIELD_LEADER', 'FIELD_ADMINISTRATOR'].includes(user?.role || '') && t('member.selectFiltersPrompt')}
             </p>
           </div>
         </div>
@@ -296,8 +297,12 @@ const MemberDirectory: React.FC = () => {
                     >
                       <td className="px-6 py-4">
                         <div className="flex items-center">
-                          <div className="h-10 w-10 rounded-xl bg-sda-blue/10 dark:bg-sda-blue/20 flex items-center justify-center text-sda-blue font-bold shadow-inner">
-                            {member.firstName[0]}{member.lastName[0]}
+                          <div className="h-10 w-10 rounded-xl bg-sda-blue/10 dark:bg-sda-blue/20 flex items-center justify-center text-sda-blue font-bold shadow-inner overflow-hidden">
+                            {member.imageUrl ? (
+                              <img src={member.imageUrl} alt="" className="w-full h-full object-cover" />
+                            ) : (
+                              `${member.firstName[0]}${member.lastName[0]}`
+                            )}
                           </div>
                           <div className="ml-4">
                             <div className="text-sm font-bold text-slate-900 dark:text-white group-hover:text-sda-blue transition-colors">
@@ -445,7 +450,6 @@ const TableSkeleton = () => (
 );
 
 const PendingApprovalsSection: React.FC<{ user: { id: string; name: string } }> = ({ user }) => {
-  const { t } = useTranslation();
   const { data: requests, isLoading } = useMemberChangeRequests();
   const approveMutation = useApproveChangeRequest();
   const rejectMutation = useRejectChangeRequest();

@@ -1,14 +1,13 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { useNavigate, Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ROUTES } from '@/constants/routes';
-import { Mail, ArrowLeft, CheckCircle2, Loader2 } from 'lucide-react';
+import { Mail, ArrowLeft, Loader2 } from 'lucide-react';
 
 const ForgotPassword: React.FC = () => {
-  const [isSent, setIsSent] = useState(false);
   const navigate = useNavigate();
   const { t } = useTranslation();
 
@@ -22,33 +21,9 @@ const ForgotPassword: React.FC = () => {
   });
 
   const onSubmit = async (data: ForgotPasswordValues) => {
-    // Simulate API call
-    console.log('Reset link requested for:', data.email);
     await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsSent(true);
+    navigate(ROUTES.VERIFY_OTP, { state: { email: data.email } });
   };
-
-  if (isSent) {
-    return (
-      <div className="text-center space-y-6">
-        <div className="flex justify-center">
-          <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-full flex items-center justify-center">
-            <CheckCircle2 size={32} />
-          </div>
-        </div>
-        <div className="space-y-2">
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white">{t('auth.forgotCheckEmailHeading')}</h2>
-          <p className="text-sm text-slate-500">{t('auth.forgotCheckEmailMessage')}</p>
-        </div>
-        <button
-          onClick={() => navigate(ROUTES.LOGIN)}
-          className="w-full bg-sda-blue hover:bg-sda-blue-dark text-white font-bold py-3 rounded-lg shadow-lg transform transition-transform active:scale-95"
-        >
-          {t('auth.backToLogin')}
-        </button>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">

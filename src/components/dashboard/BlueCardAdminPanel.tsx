@@ -20,10 +20,6 @@ export const BlueCardAdminPanel: React.FC<Props> = ({ open, onClose }) => {
 
   if (!open) return null;
 
-  const startEdit = (card: BlueCardContent) => {
-    setEditCard({ ...card, missionWords: [...card.missionWords] });
-  };
-
   const saveCardEdit = () => {
     if (!editCard) return;
     updateCard(editCard.id, {

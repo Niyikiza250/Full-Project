@@ -1,7 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { MOCK_MEMBERS, MOCK_CHANGE_REQUESTS } from '@/utils/mockData';
-import { Member, MemberChangeRequest, MemberFilters, MemberStatus } from '@/types/member';
-import { UserRole } from '@/constants/routes';
+import { Member, MemberFilters } from '@/types/member';
 
 // --- existing: Member CRUD ---
 

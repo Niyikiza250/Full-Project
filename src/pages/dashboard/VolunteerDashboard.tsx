@@ -1,9 +1,22 @@
-import React from 'react';
-import { ClipboardList, CheckCircle, Calendar, TrendingUp, Bell, UserCheck, Clock, Heart } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { ClipboardList, CheckCircle, Calendar, TrendingUp, UserCheck, Clock, Bookmark } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/constants/routes';
+import { AnimatePresence, motion } from 'framer-motion';
+import { useBlueCardStore } from '@/store/useBlueCardStore';
 
 export const VolunteerDashboard: React.FC = () => {
+  const [activeMotto, setActiveMotto] = useState(0);
+
+  const card = useBlueCardStore((s) => s.cards.find((c) => c.id === s.activeCardId));
+  const missionWords = card?.missionWords ?? [];
+
+  useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      setActiveMotto((current) => (current + 1) % (missionWords.length || 1));
+    }, 30000);
+    return () => window.clearInterval(intervalId);
+  }, [missionWords.length]);
 
   const statsCards = [
     { label: 'Assigned Tasks', value: '6', icon: <ClipboardList className="text-sda-blue" />, desc: 'Current tasks' },
@@ -20,6 +33,76 @@ export const VolunteerDashboard: React.FC = () => {
 
   return (
     <div className="space-y-4">
+
+      {/* Welcome banner with Blue Card */}
+      <div className="bg-gradient-to-r from-sda-blue to-sda-blue-dark text-white rounded-2xl p-6 shadow-md relative overflow-hidden">
+        <div className="absolute right-0 bottom-0 opacity-10 transform translate-y-1/4 translate-x-1/4">
+          <Bookmark size={260} />
+        </div>
+        <div className="relative z-10 grid gap-6 md:grid-cols-2 md:items-center">
+          <div className="max-w-lg">
+            <span className="text-[10px] font-extrabold uppercase tracking-widest bg-sda-gold/20 text-sda-gold-light px-2.5 py-1 rounded-full">
+              {card?.congregationLabel ?? 'Volunteer Portal'}
+            </span>
+            <h2 className="text-2xl font-extrabold mt-3 tracking-tight">
+              {card?.mainTitle ?? 'Active Sabbath Fellowship'}
+            </h2>
+            <p className="text-xs text-white/80 mt-1.5 leading-relaxed">
+              {card?.welcomeMessage ?? 'Welcome to your volunteer dashboard. Track your tasks, join events, and stay connected with your ministry.'}
+            </p>
+          </div>
+
+          <div className="flex flex-col justify-center gap-3">
+            <div className="flex items-center justify-between">
+              <span className="rounded-full bg-white/12 px-2.5 py-1 text-[8px] font-extrabold uppercase tracking-[0.22em] text-sda-gold-light">
+                {card?.missionWordsLabel ?? 'MIFEM MOTO'}
+              </span>
+              {missionWords.length > 1 && (
+                <div className="flex gap-1.5">
+                  {missionWords.map((motto, index) => (
+                    <button
+                      key={motto.id}
+                      type="button"
+                      onClick={() => setActiveMotto(index)}
+                      className={`h-2.5 rounded-full transition-all ${
+                        index === activeMotto ? 'w-8 bg-sda-gold-light' : 'w-2.5 bg-white/35 hover:bg-white/55'
+                      }`}
+                      aria-label={motto.title}
+                    />
+                  ))}
+                </div>
+              )}
+            </div>
+
+            <div className="relative min-h-[110px]">
+              <AnimatePresence mode="wait">
+                {missionWords.length > 0 ? (
+                  <motion.div
+                    key={missionWords[activeMotto % missionWords.length].id}
+                    initial={{ opacity: 0, x: 42 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -26 }}
+                    transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                    className="absolute inset-0 flex flex-col justify-center"
+                  >
+                    <p className="text-[10px] font-black uppercase tracking-[0.14em] text-sda-gold-light">
+                      {missionWords[activeMotto % missionWords.length].title}
+                    </p>
+                    <p className="mt-2.5 text-xs font-semibold leading-5 text-white/92">
+                      {missionWords[activeMotto % missionWords.length].body}
+                    </p>
+                  </motion.div>
+                ) : (
+                  <div className="absolute inset-0 flex flex-col justify-center">
+                    <p className="text-xs italic text-white/50">{'No mission words yet. Admin can add them.'}</p>
+                  </div>
+                )}
+              </AnimatePresence>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Statistics Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         {statsCards.map((stat, i) => (

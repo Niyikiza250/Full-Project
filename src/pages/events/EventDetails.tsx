@@ -31,7 +31,7 @@ const EventDetails: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const { user } = useAuthStore();
-  const isAdmin = user?.role === 'ADMIN';
+  const isAdmin = user?.role === 'SUPER_ADMIN';
   const { data: event, isLoading } = useEvent(id || '');
 
   if (isLoading) {

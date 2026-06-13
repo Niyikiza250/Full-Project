@@ -30,30 +30,20 @@ import { UserCheck, CheckCircle2 } from 'lucide-react';
 const AttendanceTracking: React.FC = () => {
   const { t } = useTranslation();
   const { user } = useAuthStore();
-  const isAdmin = user?.role === 'ADMIN';
+  const isAdmin = user?.role === 'SUPER_ADMIN';
   const [sessionId, setSessionId] = useState<string>('');
   const [methodFilter, setMethodFilter] = useState<string>('');
-  const [memberId, setMemberId] = useState('');
-  const [memberName, setMemberName] = useState('');
+  const [memberId, setMemberId] = useState(user?.id || '');
+  const [memberName, setMemberName] = useState(user?.name || '');
   const [toast, setToast] = useState<string | null>(null);
 
   const { data: sessions = [], isLoading: loadSessions } = useAttendanceSessions();
   const { data: trends = [] } = useAttendanceTrends();
-  const { data: checkins = [], isLoading: loadCheckins } = useAttendanceCheckins(sessionId || undefined);
+  const effectiveSessionId = sessionId || sessions[0]?.id || '';
+  const { data: checkins = [], isLoading: loadCheckins } = useAttendanceCheckins(effectiveSessionId || undefined);
   const checkInMutation = useDigitalCheckIn();
 
-  React.useEffect(() => {
-    if (!sessionId && sessions.length) setSessionId(sessions[0].id);
-  }, [sessions, sessionId]);
-
-  React.useEffect(() => {
-    if (user) {
-      setMemberId(user.id);
-      setMemberName(user.name);
-    }
-  }, [user]);
-
-  const activeSession = sessions.find((s) => s.id === sessionId);
+  const activeSession = sessions.find((s) => s.id === effectiveSessionId);
 
   const filteredCheckins = useMemo(() => {
     if (!methodFilter) return checkins;

@@ -158,7 +158,7 @@ export const MOCK_ATTENDANCE_SESSIONS: AttendanceSession[] = [
   },
 ];
 
-export let MOCK_ATTENDANCE_CHECKINS: AttendanceCheckIn[] = [
+export const MOCK_ATTENDANCE_CHECKINS: AttendanceCheckIn[] = [
   {
     id: 'c1',
     sessionId: 'as1',
@@ -193,7 +193,7 @@ export const MOCK_ATTENDANCE_TRENDS: AttendanceTrendPoint[] = [
   { period: 'May', rate: 84, participants: 45120 },
 ];
 
-export let MOCK_ANNOUNCEMENTS: Announcement[] = [
+export const MOCK_ANNOUNCEMENTS: Announcement[] = [
   {
     id: 'an1',
     title: 'Quarterly Statistical Returns Due',
@@ -435,7 +435,7 @@ export const MOCK_ACHIEVEMENTS: AchievementItem[] = [
   },
 ];
 
-export let MOCK_MANAGED_USERS: ManagedUser[] = [
+export const MOCK_MANAGED_USERS: ManagedUser[] = [
   {
     id: 'u1',
     name: 'System Administrator',
@@ -466,6 +466,18 @@ export let MOCK_MANAGED_USERS: ManagedUser[] = [
     lastLogin: '2026-05-18T15:20:00',
     mfaEnabled: false,
     permissions: ['members.read', 'reports.view', 'comms.announce'],
+    unionId: 'UM1',
+    fieldId: 'FR1',
+  },
+  {
+    id: 'u9',
+    name: 'Field Administrator Kigali',
+    email: 'fieldadmin@mifem.rw',
+    role: 'FIELD_ADMINISTRATOR',
+    status: 'ACTIVE',
+    lastLogin: '2026-05-19T07:00:00',
+    mfaEnabled: true,
+    permissions: ['members.read', 'members.write', 'reports.view', 'comms.announce', 'users.manage', 'audit.read'],
     unionId: 'UM1',
     fieldId: 'FR1',
   },
@@ -540,7 +552,7 @@ export let MOCK_MANAGED_USERS: ManagedUser[] = [
   },
 ];
 
-export let MOCK_AUDIT_LOGS: AuditLogEntry[] = [
+export const MOCK_AUDIT_LOGS: AuditLogEntry[] = [
   {
     id: 'a1',
     actor: 'admin@mifem.rw',

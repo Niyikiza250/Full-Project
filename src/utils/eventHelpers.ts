@@ -2,7 +2,7 @@ import { Event, EventCategory, EventStatus } from '@/types/event';
 
 export const CATEGORY_LABELS: Record<EventCategory, string> = {
   WORSHIP: 'Worship',
-  CONFERENCE: 'Field',
+  FIELD: 'Field',
   COMMUNITY: 'Community',
   YOUTH: 'Youth',
   TRAINING: 'Training',
@@ -19,7 +19,7 @@ export const STATUS_LABELS: Record<EventStatus, string> = {
 
 export const CATEGORY_COLORS: Record<EventCategory, string> = {
   WORSHIP: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300',
-  CONFERENCE: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
+  FIELD: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
   COMMUNITY: 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300',
   YOUTH: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-300',
   TRAINING: 'bg-cyan-100 text-cyan-700 dark:bg-cyan-900/30 dark:text-cyan-300',

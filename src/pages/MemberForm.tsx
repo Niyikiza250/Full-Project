@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -7,12 +7,12 @@ import { useNavigate, useParams, Navigate } from 'react-router-dom';
 import { ROUTES } from '@/constants/routes';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useMember } from '@/services/memberService';
-import { MOCK_CHANGE_REQUESTS } from '@/utils/mockData';
 import { 
   ArrowLeft, Save, Loader2, User, Church, MapPin, 
-  Calendar, Camera, Upload, X, Shield, Clock 
+  Camera, Upload, X, Shield, Clock 
 } from 'lucide-react';
 import { clsx } from 'clsx';
+import { rwandaLocation } from '@devrw/rwanda-location';
 
 const memberSchema = (t: (key: string) => string) => z.object({
   firstName: z.string().min(2, t('member.validation.firstNameRequired')),
@@ -24,11 +24,30 @@ const memberSchema = (t: (key: string) => string) => z.object({
   baptismDate: z.string().optional(),
   role: z.string().min(1, t('member.validation.roleRequired')),
   status: z.string().min(1, t('member.validation.statusRequired')),
-  churchName: z.string().min(1, t('member.validation.churchNameRequired')),
-  fieldName: z.string().min(1, t('member.validation.fieldNameRequired')),
-  zoneName: z.string().min(1, t('member.validation.zoneNameRequired')),
   sabbathClass: z.string().optional(),
-  address: z.string().min(1, t('member.validation.addressRequired')),
+  address: z.string().optional(),
+  imageUrl: z.string().optional(),
+  registrationType: z.enum(['MEMBER', 'VOLUNTEER']).default('VOLUNTEER'),
+  provinceCode: z.coerce.number().optional(),
+  provinceName: z.string().optional(),
+  districtCode: z.coerce.number().optional(),
+  districtName: z.string().optional(),
+  sectorCode: z.string().optional(),
+  sectorName: z.string().optional(),
+  cellCode: z.coerce.number().optional(),
+  cellName: z.string().optional(),
+  villageCode: z.coerce.number().optional(),
+  villageName: z.string().optional(),
+}).superRefine((data, ctx) => {
+  if (data.registrationType === 'VOLUNTEER') {
+    if (!data.provinceCode) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Province is required', path: ['provinceCode'] });
+    if (!data.districtCode) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'District is required', path: ['districtCode'] });
+    if (!data.sectorCode) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Sector is required', path: ['sectorCode'] });
+    if (!data.cellCode) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Cell is required', path: ['cellCode'] });
+    if (!data.villageCode) ctx.addIssue({ code: z.ZodIssueCode.custom, message: 'Village is required', path: ['villageCode'] });
+  } else {
+    if (!data.address) ctx.addIssue({ code: z.ZodIssueCode.custom, message: t('member.validation.addressRequired') || 'Address is required', path: ['address'] });
+  }
 });
 
 type MemberFormValues = z.infer<ReturnType<typeof memberSchema>>;
@@ -39,29 +58,41 @@ const MemberForm: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuthStore();
   const isEdit = !!id;
-  const canDirectEdit = user?.role === 'SUPER_ADMIN' || user?.role === 'CHURCH_LEADER';
   const needsApproval = user?.role === 'MINISTRY_LEADER';
 
-  if (user?.role !== 'SUPER_ADMIN' && user?.role !== 'CHURCH_LEADER' && user?.role !== 'MINISTRY_LEADER') {
-    return <Navigate to={ROUTES.UNAUTHORIZED} replace />;
-  }
   const { data: member, isLoading: isMemberLoading } = useMember(id || '');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<MemberFormValues>({
-    resolver: zodResolver(memberSchema(t)),
+  const schema = useMemo(() => memberSchema(t), [t]);
+
+  const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting } } = useForm<MemberFormValues>({
+    resolver: zodResolver(schema),
     values: member ? {
       ...member,
       baptismDate: member.baptismDate || '',
     } : undefined,
   });
 
+  const provinceCode = watch('provinceCode');
+  const districtCode = watch('districtCode');
+  const sectorCode = watch('sectorCode');
+  const cellCode = watch('cellCode');
+  const registrationType = watch('registrationType');
+
+  const provinces = rwandaLocation.getProvinces() || [];
+  const districts = provinceCode ? rwandaLocation.getDistricts(provinceCode) || [] : [];
+  const sectors = districtCode ? rwandaLocation.getSectors(districtCode) || [] : [];
+  const cells = sectorCode ? rwandaLocation.getCells(sectorCode) || [] : [];
+  const villages = cellCode ? rwandaLocation.getVillages(cellCode) || [] : [];
+
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImagePreview(reader.result as string);
+        const dataUrl = reader.result as string;
+        setImagePreview(dataUrl);
+        setValue('imageUrl', dataUrl, { shouldValidate: true });
       };
       reader.readAsDataURL(file);
     }
@@ -69,18 +100,6 @@ const MemberForm: React.FC = () => {
 
   const onSubmit = async (data: MemberFormValues) => {
     if (needsApproval) {
-      const changeRequest = {
-        id: `cr-${Date.now()}`,
-        memberId: isEdit ? id : undefined,
-        type: isEdit ? ('UPDATE' as const) : ('CREATE' as const),
-        submittedBy: user?.id || '',
-        submittedByRole: 'MINISTRY_LEADER' as const,
-        submittedByEmail: user?.email || '',
-        submittedAt: new Date().toISOString(),
-        status: 'PENDING' as const,
-        changes: data as any,
-      };
-      MOCK_CHANGE_REQUESTS.push(changeRequest);
       await new Promise((resolve) => setTimeout(resolve, 1000));
       navigate(ROUTES.MEMBERS);
       return;
@@ -98,6 +117,10 @@ const MemberForm: React.FC = () => {
     );
   }
 
+  if (user?.role !== 'SUPER_ADMIN' && user?.role !== 'CHURCH_LEADER' && user?.role !== 'MINISTRY_LEADER') {
+    return <Navigate to={ROUTES.UNAUTHORIZED} replace />;
+  }
+
   return (
     <div className="max-w-5xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
@@ -110,6 +133,33 @@ const MemberForm: React.FC = () => {
         <h1 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
           {isEdit ? t('member.formUpdate') : t('member.formRegister')}
         </h1>
+      </div>
+
+      <div className="flex bg-slate-100 dark:bg-slate-800 p-1 rounded-xl w-fit">
+        <button
+          type="button"
+          onClick={() => setValue('registrationType', 'MEMBER')}
+          className={clsx(
+            "px-6 py-2 rounded-lg text-sm font-bold transition-all",
+            registrationType === 'MEMBER' 
+              ? "bg-white dark:bg-slate-700 text-sda-blue shadow-sm" 
+              : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          )}
+        >
+          Register as Member
+        </button>
+        <button
+          type="button"
+          onClick={() => setValue('registrationType', 'VOLUNTEER')}
+          className={clsx(
+            "px-6 py-2 rounded-lg text-sm font-bold transition-all",
+            registrationType === 'VOLUNTEER' 
+              ? "bg-white dark:bg-slate-700 text-sda-blue shadow-sm" 
+              : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          )}
+        >
+          Register as Volunteer
+        </button>
       </div>
 
       <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -127,6 +177,7 @@ const MemberForm: React.FC = () => {
                 <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center cursor-pointer">
                   <Upload size={24} className="text-white" />
                   <input type="file" className="hidden" onChange={handleImageChange} accept="image/*" />
+                  <input type="hidden" {...register('imageUrl')} />
                 </label>
               </div>
               {imagePreview && (
@@ -198,9 +249,131 @@ const MemberForm: React.FC = () => {
               <InputField label={t('member.formZone')} {...register('zoneName')} error={errors.zoneName?.message} />
               <InputField label={t('member.formField')} {...register('fieldName')} error={errors.fieldName?.message} />
               <InputField label={t('member.filterClass')} {...register('sabbathClass')} />
-              <InputField label={t('member.formResidence')} {...register('address')} error={errors.address?.message} />
+              {registrationType === 'MEMBER' && (
+                <InputField label={t('member.formResidence')} {...register('address')} error={errors.address?.message} />
+              )}
             </div>
           </Section>
+
+          {registrationType === 'VOLUNTEER' && (
+            <Section title="Location Information" icon={<MapPin size={18} />}>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Province *</label>
+                <select 
+                  className={clsx("w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 transition-all text-sm font-medium", errors.provinceCode ? "border-red-200 bg-red-50 dark:bg-red-900/10 focus:ring-red-500" : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-sda-blue")}
+                  value={provinceCode || ''}
+                  onChange={(e) => {
+                    const code = Number(e.target.value);
+                    const name = provinces.find((p: any) => p.code === code)?.name || '';
+                    setValue('provinceCode', code, { shouldValidate: true });
+                    setValue('provinceName', name);
+                    setValue('districtCode', 0);
+                    setValue('districtName', '');
+                    setValue('sectorCode', '');
+                    setValue('sectorName', '');
+                    setValue('cellCode', 0);
+                    setValue('cellName', '');
+                    setValue('villageCode', 0);
+                    setValue('villageName', '');
+                  }}
+                >
+                  <option value="">Select Province</option>
+                  {provinces.map((p: any) => <option key={p.code} value={p.code}>{p.name}</option>)}
+                </select>
+                {errors.provinceCode && <p className="mt-1.5 text-[10px] text-red-500 font-bold ml-1 uppercase">{errors.provinceCode.message}</p>}
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">District *</label>
+                <select 
+                  disabled={!provinceCode}
+                  className={clsx("w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 transition-all text-sm font-medium", errors.districtCode ? "border-red-200 bg-red-50 dark:bg-red-900/10 focus:ring-red-500" : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-sda-blue")}
+                  value={districtCode || ''}
+                  onChange={(e) => {
+                    const code = Number(e.target.value);
+                    const name = districts.find((d: any) => d.code === code)?.name || '';
+                    setValue('districtCode', code, { shouldValidate: true });
+                    setValue('districtName', name);
+                    setValue('sectorCode', '');
+                    setValue('sectorName', '');
+                    setValue('cellCode', 0);
+                    setValue('cellName', '');
+                    setValue('villageCode', 0);
+                    setValue('villageName', '');
+                  }}
+                >
+                  <option value="">Select District</option>
+                  {districts.map((d: any) => <option key={d.code} value={d.code}>{d.name}</option>)}
+                </select>
+                {errors.districtCode && <p className="mt-1.5 text-[10px] text-red-500 font-bold ml-1 uppercase">{errors.districtCode.message}</p>}
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Sector *</label>
+                <select 
+                  disabled={!districtCode}
+                  className={clsx("w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 transition-all text-sm font-medium", errors.sectorCode ? "border-red-200 bg-red-50 dark:bg-red-900/10 focus:ring-red-500" : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-sda-blue")}
+                  value={sectorCode || ''}
+                  onChange={(e) => {
+                    const code = e.target.value;
+                    const name = sectors.find((s: any) => s.code === code)?.name || '';
+                    setValue('sectorCode', code, { shouldValidate: true });
+                    setValue('sectorName', name);
+                    setValue('cellCode', 0);
+                    setValue('cellName', '');
+                    setValue('villageCode', 0);
+                    setValue('villageName', '');
+                  }}
+                >
+                  <option value="">Select Sector</option>
+                  {sectors.map((s: any) => <option key={s.code} value={s.code}>{s.name}</option>)}
+                </select>
+                {errors.sectorCode && <p className="mt-1.5 text-[10px] text-red-500 font-bold ml-1 uppercase">{errors.sectorCode.message}</p>}
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Cell *</label>
+                <select 
+                  disabled={!sectorCode}
+                  className={clsx("w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 transition-all text-sm font-medium", errors.cellCode ? "border-red-200 bg-red-50 dark:bg-red-900/10 focus:ring-red-500" : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-sda-blue")}
+                  value={cellCode || ''}
+                  onChange={(e) => {
+                    const code = Number(e.target.value);
+                    const name = cells.find((c: any) => c.code === code)?.name || '';
+                    setValue('cellCode', code, { shouldValidate: true });
+                    setValue('cellName', name);
+                    setValue('villageCode', 0);
+                    setValue('villageName', '');
+                  }}
+                >
+                  <option value="">Select Cell</option>
+                  {cells.map((c: any) => <option key={c.code} value={c.code}>{c.name}</option>)}
+                </select>
+                {errors.cellCode && <p className="mt-1.5 text-[10px] text-red-500 font-bold ml-1 uppercase">{errors.cellCode.message}</p>}
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1.5 ml-1">Village *</label>
+                <select 
+                  disabled={!cellCode}
+                  className={clsx("w-full px-4 py-2.5 rounded-lg border outline-none focus:ring-2 transition-all text-sm font-medium", errors.villageCode ? "border-red-200 bg-red-50 dark:bg-red-900/10 focus:ring-red-500" : "border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 focus:ring-sda-blue")}
+                  value={villageCode || ''}
+                  onChange={(e) => {
+                    const code = Number(e.target.value);
+                    const name = villages.find((v: any) => v.code === code)?.name || '';
+                    setValue('villageCode', code, { shouldValidate: true });
+                    setValue('villageName', name);
+                  }}
+                >
+                  <option value="">Select Village</option>
+                  {villages.map((v: any) => <option key={v.code} value={v.code}>{v.name}</option>)}
+                </select>
+                {errors.villageCode && <p className="mt-1.5 text-[10px] text-red-500 font-bold ml-1 uppercase">{errors.villageCode.message}</p>}
+              </div>
+            </div>
+          </Section>
+          )}
 
           <Section title={t('member.formSpiritual')} icon={<Shield size={18} />}>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">

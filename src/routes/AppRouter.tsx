@@ -28,11 +28,20 @@ import CommunicationHub from '@/pages/communication/CommunicationHub';
 import ReportsAnalytics from '@/pages/reports/ReportsAnalytics';
 import AchievementsModule from '@/pages/achievements/AchievementsModule';
 import UserManagement from '@/pages/admin/UserManagement';
+import FieldsPage from '@/pages/admin/FieldsPage';
+import DistrictsPage from '@/pages/admin/DistrictsPage';
+import ChurchesPage from '@/pages/admin/ChurchesPage';
 import Profile from '@/pages/Profile';
 import Settings from '@/pages/Settings';
 import ForcePasswordChange from '@/pages/auth/ForcePasswordChange';
 import Home from '@/pages/Home';
 import AnnouncementsPage from '@/pages/announcements/AnnouncementsPage';
+import PrayerCounselingPage from '@/pages/prayer/PrayerCounselingPage';
+import TrainingPage from '@/pages/training/TrainingPage';
+import DocumentsPage from '@/pages/documents/DocumentsPage';
+import ForumsPage from '@/pages/forums/ForumsPage';
+import ServiceHoursPage from '@/pages/volunteers/ServiceHoursPage';
+import RecognitionPage from '@/pages/volunteers/RecognitionPage';
 
 const LoadingScreen = () => (
   <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950">
@@ -86,11 +95,14 @@ const AppRouter: React.FC = () => {
                 <Route path={ROUTES.EVENT_ADD} element={<EventForm />} />
                 <Route path={ROUTES.EVENT_EDIT} element={<EventForm />} />
                 <Route path={ROUTES.ADMIN_USERS} element={<UserManagement />} />
+                <Route path={ROUTES.ADMIN_FIELDS} element={<FieldsPage />} />
+                <Route path={ROUTES.ADMIN_DISTRICTS} element={<DistrictsPage />} />
+                <Route path={ROUTES.ADMIN_CHURCHES} element={<ChurchesPage />} />
                 <Route path={ROUTES.SYSTEM_SETTINGS} element={<Settings />} />
               </Route>
 
-              {/* Member create/edit — accessible by SUPER_ADMIN, CHURCH_LEADER, MINISTRY_LEADER */}
-              <Route element={<RoleBasedRoute allowedRoles={['SUPER_ADMIN', 'CHURCH_LEADER', 'MINISTRY_LEADER'] as UserRole[]} />}>
+              {/* Member create/edit — accessible by SUPER_ADMIN, FIELD_ADMINISTRATOR, CHURCH_LEADER, MINISTRY_LEADER */}
+              <Route element={<RoleBasedRoute allowedRoles={['SUPER_ADMIN', 'FIELD_ADMINISTRATOR', 'CHURCH_LEADER', 'MINISTRY_LEADER'] as UserRole[]} />}>
                 <Route path={ROUTES.MEMBER_ADD} element={<MemberForm />} />
                 <Route path={ROUTES.MEMBER_EDIT} element={<MemberForm />} />
               </Route>
@@ -101,13 +113,17 @@ const AppRouter: React.FC = () => {
                 <Route path={ROUTES.MINISTRY_ACTIVITIES} element={<Dashboard />} />
               </Route>
 
-              <Route element={<RoleBasedRoute allowedRoles={['FIELD_LEADER'] as UserRole[]} />}>
+              <Route element={<RoleBasedRoute allowedRoles={['FIELD_ADMINISTRATOR', 'FIELD_LEADER'] as UserRole[]} />}>
                 <Route path={ROUTES.DISTRICTS} element={<Dashboard />} />
               </Route>
 
-              <Route element={<RoleBasedRoute allowedRoles={['DISTRICT_LEADER'] as UserRole[]} />}>
+              <Route element={<RoleBasedRoute allowedRoles={['FIELD_ADMINISTRATOR', 'DISTRICT_LEADER'] as UserRole[]} />}>
                 <Route path={ROUTES.CHURCHES} element={<Dashboard />} />
                 <Route path={ROUTES.CHURCH_LEADERS} element={<Dashboard />} />
+              </Route>
+
+              <Route element={<RoleBasedRoute allowedRoles={['FIELD_ADMINISTRATOR'] as UserRole[]} />}>
+                <Route path={ROUTES.TASKS} element={<Dashboard />} />
               </Route>
 
               <Route element={<RoleBasedRoute allowedRoles={['CHURCH_LEADER'] as UserRole[]} />}>
@@ -140,10 +156,18 @@ const AppRouter: React.FC = () => {
               {/* Announcements — accessible by all roles that can send or read */}
               <Route
                 path={ROUTES.ANNOUNCEMENTS}
-                element={<RoleBasedRoute allowedRoles={['SUPER_ADMIN', 'UNION_LEADER', 'FIELD_LEADER', 'DISTRICT_LEADER', 'CHURCH_LEADER', 'MINISTRY_LEADER', 'MEMBER', 'VOLUNTEER'] as UserRole[]} />}
+                element={<RoleBasedRoute allowedRoles={['SUPER_ADMIN', 'UNION_LEADER', 'FIELD_ADMINISTRATOR', 'FIELD_LEADER', 'DISTRICT_LEADER', 'CHURCH_LEADER', 'MINISTRY_LEADER', 'MEMBER', 'VOLUNTEER'] as UserRole[]} />}
               >
                 <Route index element={<AnnouncementsPage />} />
               </Route>
+
+              {/* New Module Routes */}
+              <Route path={ROUTES.PRAYER_COUNSELING} element={<PrayerCounselingPage />} />
+              <Route path={ROUTES.TRAINING} element={<TrainingPage />} />
+              <Route path={ROUTES.DOCUMENTS} element={<DocumentsPage />} />
+              <Route path={ROUTES.FORUMS} element={<ForumsPage />} />
+              <Route path={ROUTES.VOLUNTEER_HOURS} element={<ServiceHoursPage />} />
+              <Route path={ROUTES.VOLUNTEER_RECOGNITION} element={<RecognitionPage />} />
 
               <Route path="/" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
               <Route path="/home" element={<Navigate to={ROUTES.HOME} replace />} />

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Navigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import PageHeader from '@/components/ui/PageHeader';
 import LoadingBlock from '@/components/ui/LoadingBlock';
 import ExportMenu from '@/components/ui/ExportMenu';
@@ -34,11 +34,8 @@ const ROLES: UserRole[] = ['SUPER_ADMIN', 'UNION_LEADER', 'FIELD_LEADER', 'DISTR
 
 const UserManagement: React.FC = () => {
   const { t } = useTranslation();
-  const { user: currentUser, excelImportAllowedRoles = ['ADMIN'], toggleExcelImportPermission } = useAuthStore();
+  const { user: currentUser, excelImportAllowedRoles = ['SUPER_ADMIN'], toggleExcelImportPermission } = useAuthStore();
 
-  if (currentUser?.role !== 'SUPER_ADMIN') {
-    return <Navigate to={ROUTES.UNAUTHORIZED} replace />;
-  }
   const { data: users, isLoading: lu } = useManagedUsers();
   const { data: audit, isLoading: la } = useAuditLogs();
   const { data: activity, isLoading: lac } = useAdminActivity();
@@ -220,6 +217,10 @@ const UserManagement: React.FC = () => {
       setExcelErrors([err?.message || t('admin.bulkRegistrationFailed')]);
     }
   };
+
+  if (currentUser?.role !== 'SUPER_ADMIN') {
+    return <Navigate to={ROUTES.UNAUTHORIZED} replace />;
+  }
 
   return (
     <div className="mx-auto max-w-7xl space-y-6">
@@ -403,7 +404,7 @@ const UserManagement: React.FC = () => {
                         "rounded-xl border px-3 py-1.5 text-xs font-bold outline-none focus:ring-1",
                         u.status === 'ACTIVE' && "border-green-200 bg-green-50 text-green-700 dark:bg-green-950/20 dark:text-green-400 dark:border-green-900/30",
                         u.status === 'SUSPENDED' && "border-red-200 bg-red-50 text-red-700 dark:bg-red-950/20 dark:text-red-400 dark:border-red-900/30",
-                        u.status === 'LOCKED' && "border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-450 dark:border-amber-900/30",
+                        u.status === 'LOCKED' && "border-amber-200 bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-500 dark:border-amber-900/30",
                         u.status === 'INVITED' && "border-sda-blue/20 bg-sda-blue/5 text-sda-blue dark:bg-sda-gold/10 dark:text-sda-gold-light dark:border-sda-gold/20"
                       )}
                       aria-label={t('admin.accountStatus')}
@@ -473,7 +474,7 @@ const UserManagement: React.FC = () => {
                   type="text"
                   value={editForm.name}
                   onChange={(e) => setEditForm(f => ({ ...f, name: e.target.value }))}
-                  className="w-full text-xs font-semibold px-4 py-2.5 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-1"
+                  className="w-full text-xs font-semibold px-4 py-2.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-1"
                 />
               </div>
               <div className="space-y-1">
@@ -482,7 +483,7 @@ const UserManagement: React.FC = () => {
                   type="email"
                   value={editForm.email}
                   onChange={(e) => setEditForm(f => ({ ...f, email: e.target.value }))}
-                  className="w-full text-xs font-semibold px-4 py-2.5 bg-slate-50 dark:bg-slate-850 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-1"
+                  className="w-full text-xs font-semibold px-4 py-2.5 bg-slate-50 dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 outline-none focus:ring-1"
                 />
               </div>
             </div>
@@ -490,7 +491,7 @@ const UserManagement: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setEditUser(null)}
-                className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-650 dark:text-slate-300 font-bold rounded-xl text-xs cursor-pointer hover:bg-slate-200"
+                className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs cursor-pointer hover:bg-slate-200"
               >
                 {t('common.cancel')}
               </button>
@@ -513,7 +514,7 @@ const UserManagement: React.FC = () => {
       {/* Delete User Modal */}
       {deleteConfirmUser && (
         <div role="dialog" className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4">
-          <div className="bg-white dark:bg-slate-900 max-w-sm w-full p-6 rounded-2xl shadow-xl space-y-4 border border-slate-200 dark:border-slate-850 text-center">
+          <div className="bg-white dark:bg-slate-900 max-w-sm w-full p-6 rounded-2xl shadow-xl space-y-4 border border-slate-200 dark:border-slate-900 text-center">
             <div className="mx-auto w-10 h-10 bg-red-50 dark:bg-red-950/20 text-red-500 rounded-full flex items-center justify-center">
               <AlertTriangle size={20} />
             </div>
@@ -523,7 +524,7 @@ const UserManagement: React.FC = () => {
               <button
                 type="button"
                 onClick={() => setDeleteConfirmUser(null)}
-                className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-650 dark:text-slate-300 font-bold rounded-xl text-xs cursor-pointer"
+                className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs cursor-pointer"
               >
                 {t('common.cancel')}
               </button>
@@ -546,7 +547,7 @@ const UserManagement: React.FC = () => {
       {/* Reset Password Modal */}
       {resetConfirmUser && (
         <div role="dialog" className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4">
-          <div className="bg-white dark:bg-slate-900 max-w-md w-full p-6 rounded-2xl shadow-xl space-y-4 border border-slate-200 dark:border-slate-850">
+          <div className="bg-white dark:bg-slate-900 max-w-md w-full p-6 rounded-2xl shadow-xl space-y-4 border border-slate-200 dark:border-slate-900">
             <h3 className="font-extrabold text-sm text-slate-800 dark:text-white">{t('admin.resetPasswordHeading')}</h3>
             
             {!resetTempPassword ? (
@@ -556,7 +557,7 @@ const UserManagement: React.FC = () => {
                   <button
                     type="button"
                     onClick={() => setResetConfirmUser(null)}
-                    className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-650 dark:text-slate-300 font-bold rounded-xl text-xs cursor-pointer"
+                    className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs cursor-pointer"
                   >
                     {t('common.cancel')}
                   </button>
@@ -631,7 +632,7 @@ const UserManagement: React.FC = () => {
                       className="absolute inset-0 opacity-0 cursor-pointer"
                     />
                     <div className="space-y-2 flex flex-col items-center justify-center">
-                      <div className="w-10 h-10 bg-slate-55 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-400">
+                      <div className="w-10 h-10 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center text-slate-400">
                         <FileSpreadsheet size={20} />
                       </div>
                       <p className="text-xs font-bold text-slate-700 dark:text-slate-200">
@@ -658,13 +659,13 @@ const UserManagement: React.FC = () => {
                   {/* Preview Table */}
                   {excelPreview && excelPreview.length > 0 && (
                     <div className="space-y-2">
-                      <p className="text-[10px] font-bold text-slate-450 uppercase flex items-center gap-1">
+                      <p className="text-[10px] font-bold text-slate-500 uppercase flex items-center gap-1">
                         <CheckCircle className="text-green-600" size={12} />
                         {t('admin.importPreview', { count: excelPreview.length })}
                       </p>
-                      <div className="overflow-x-auto rounded-xl border border-slate-150 dark:border-slate-800 max-h-[220px]">
+                      <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 max-h-[220px]">
                         <table className="w-full text-left text-[11px] min-w-[320px]">
-                          <thead className="bg-slate-50 dark:bg-slate-800/40 text-slate-450">
+                          <thead className="bg-slate-50 dark:bg-slate-800/40 text-slate-500">
                             <tr>
                               <th className="p-3 font-bold">{t('admin.tableName')}</th>
                               <th className="p-3 font-bold">{t('admin.tableEmail')}</th>
@@ -695,7 +696,7 @@ const UserManagement: React.FC = () => {
                       setExcelPreview(null);
                       setExcelErrors(null);
                     }}
-                    className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-650 dark:text-slate-300 font-bold rounded-xl text-xs cursor-pointer"
+                    className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold rounded-xl text-xs cursor-pointer"
                   >
                     {t('common.cancel')}
                   </button>
@@ -729,7 +730,7 @@ const UserManagement: React.FC = () => {
                 {/* Import Table of credentials */}
                 <div className="space-y-2">
                   <div className="flex justify-between items-center">
-                    <span className="text-[10px] font-bold text-slate-450 uppercase">{t('admin.generatedPasswords')}</span>
+                    <span className="text-[10px] font-bold text-slate-500 uppercase">{t('admin.generatedPasswords')}</span>
                     <button
                       type="button"
                       onClick={() => {
@@ -749,9 +750,9 @@ const UserManagement: React.FC = () => {
                     </button>
                   </div>
 
-                  <div className="overflow-x-auto rounded-xl border border-slate-150 dark:border-slate-800 max-h-[220px]">
+                  <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 max-h-[220px]">
                     <table className="w-full text-left text-[11px] min-w-[320px]">
-                      <thead className="bg-slate-50 dark:bg-slate-800/40 text-slate-450">
+                      <thead className="bg-slate-50 dark:bg-slate-800/40 text-slate-500">
                         <tr>
                           <th className="p-3 font-bold">{t('admin.tableUser')}</th>
                           <th className="p-3 font-bold">{t('admin.tableEmail')}</th>
@@ -821,7 +822,7 @@ const UserManagement: React.FC = () => {
                         onClick={() => togglePerm(p)}
                         className={cn(
                           'rounded-full px-3 py-1 text-xs font-bold ring-1 transition cursor-pointer',
-                          selectedPerms.includes(p) ? 'bg-sda-blue text-white ring-sda-blue' : 'ring-slate-200 text-slate-650 dark:ring-slate-650'
+                          selectedPerms.includes(p) ? 'bg-sda-blue text-white ring-sda-blue' : 'ring-slate-200 text-slate-700 dark:ring-slate-700'
                         )}
                       >
                         {p}
@@ -861,11 +862,11 @@ const UserManagement: React.FC = () => {
                   <div>
                     <span className={cn(
                       "px-1.5 py-0.5 rounded text-[8px] font-bold uppercase mr-2",
-                      a.severity === 'WARN' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-450' : 'bg-sda-blue/5 text-sda-blue dark:bg-sda-gold/10 dark:text-sda-gold-light'
+                      a.severity === 'WARN' ? 'bg-amber-50 text-amber-700 dark:bg-amber-950/20 dark:text-amber-500' : 'bg-sda-blue/5 text-sda-blue dark:bg-sda-gold/10 dark:text-sda-gold-light'
                     )}>
                       {a.action}
                     </span>
-                    <p className="mt-1.5 font-bold text-slate-850 dark:text-slate-200">Target: {a.target}</p>
+                    <p className="mt-1.5 font-bold text-slate-900 dark:text-slate-200">Target: {a.target}</p>
                     <p className="text-[10px] text-slate-400 mt-0.5">Actor: {a.actor}</p>
                   </div>
                   <span className="text-[9px] text-slate-400 font-semibold shrink-0">

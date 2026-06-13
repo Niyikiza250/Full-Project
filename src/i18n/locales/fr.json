@@ -1,0 +1,138 @@
+{
+  "a11y": {
+    "skipToContent": "Passer au contenu principal"
+  },
+  "app": {
+    "name": "Plateforme de Coordination du Ministère des Femmes et des Filles",
+    "tagline": ""
+  },
+  "sidebar": {
+    "expandSidebar": "Développer la barre latérale",
+    "collapseSidebar": "Réduire la barre latérale",
+    "closeMenu": "Fermer le menu"
+  },
+  "header": {
+    "openSidebar": "Ouvrir le menu latéral",
+    "changeLanguage": "Changer de langue",
+    "toggleNotifications": "Notifications",
+    "toggleTheme": "Changer le thème",
+    "toggleSound": "Activer/Désactiver les sons",
+    "avatarAlt": "Avatar",
+    "userFallback": "Utilisateur",
+    "roleFallback": "MEMBRE"
+  },
+  "mifem": {
+    "logoAlt": "Logo MIFEM",
+    "brandName": "Plateforme de Coordination du Ministère des Femmes et des Filles",
+    "tagline": ""
+  },
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "view": "Voir",
+    "close": "Fermer",
+    "back": "Retour",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "submit": "Soumettre",
+    "loading": "Chargement...",
+    "search": "Rechercher",
+    "filter": "Filtrer",
+    "all": "Tout",
+    "none": "Aucun",
+    "yes": "Oui",
+    "no": "Non",
+    "confirm": "Confirmer",
+    "actions": "Actions",
+    "status": "Statut",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "pending": "En attente",
+    "approved": "Approuvé",
+    "rejected": "Rejeté",
+    "language": "Langue",
+    "english": "Anglais",
+    "french": "Français",
+    "kinyarwanda": "Kinyarwanda",
+    "menu": "Menu",
+    "unread": "Non lu"
+  },
+  "nav": {
+    "home": "Accueil",
+    "dashboard": "Tableau de bord",
+    "members": "Membres",
+    "directory": "Annuaire",
+    "addMember": "Ajouter un membre",
+    "events": "Événements",
+    "attendance": "Participation",
+    "communication": "Communication",
+    "reports": "Rapports et analyses",
+    "achievements": "Réalisations",
+    "adminUsers": "Gestion des utilisateurs",
+    "profile": "Profil",
+    "settings": "Paramètres",
+    "services": "Services",
+    "contact": "Contact",
+    "sabbathSchool": "Leçon d'École du Sabbat",
+    "visitUnion": "Visiter l'Union",
+    "login": "Connexion",
+    "register": "S'inscrire",
+    "notifications": "Notifications",
+    "logout": "Déconnexion",
+    "myProfile": "Mon Profil",
+    "newsUpdates": "Actualités et Mises à Jour"
+  },
+  "home": {
+    "register": "S'inscrire",
+    "toggleTheme": "Changer le thème",
+    "heroTitle": "Autonomiser la Mission par l'Information",
+    "footer": "© {{year}} MIFEM. Tous droits réservés."
+  },
+  "auth": {
+    "submit": "Connexion",
+    "loginTitle": "Connexion",
+    "registerTitle": "Créer un compte",
+    "email": "Adresse e-mail",
+    "password": "Mot de passe",
+    "confirmPassword": "Confirmer le mot de passe",
+    "name": "Nom complet",
+    "forgotPassword": "Mot de passe oublié ?",
+    "noAccount": "Pas encore de compte ?",
+    "hasAccount": "Déjà un compte ?"
+  },
+  "profile": {
+    "roleAdminTitle": "Administrateur Système",
+    "roleAdminDetail": "Accès complet à toutes les fonctionnalités de la plateforme.",
+    "roleUnionLeaderTitle": "Leader d'Union",
+    "roleUnionLeaderDetail": "Supervision au niveau de l'union.",
+    "roleFieldLeaderTitle": "Leader de Terrain",
+    "roleFieldLeaderDetail": "Gestion au niveau du terrain."
+  },
+  "admin": {
+    "role_ADMIN": "Administrateur",
+    "role_MANAGER": "Gestionnaire",
+    "role_UNION_LEADER": "Leader d'Union",
+    "role_FIELD_ADMINISTRATOR": "Administrateur de Terrain",
+    "role_FIELD_LEADER": "Leader de Terrain",
+    "role_ZONE_LEADER": "Leader de District",
+    "role_CHURCH_LEADER": "Leader d'Église",
+    "role_MEMBER": "Membre",
+    "role_VOLUNTEER": "Bénévole",
+    "role_MINISTRY_LEADER": "Leader de Ministère"
+  },
+  "fieldAdmin": {
+    "quickAccess": "Accès Rapide",
+    "members": "Membres",
+    "ministries": "Ministères",
+    "events": "Événements",
+    "volunteers": "Bénévoles",
+    "reports": "Rapports",
+    "communications": "Communications",
+    "prayerRequests": "Demandes de Prière",
+    "training": "Formation",
+    "documents": "Documents",
+    "fieldManagement": "Gestion de Terrain"
+  }
+}

@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { MOCK_MANAGED_USERS, MOCK_AUDIT_LOGS, MOCK_ADMIN_ACTIVITY } from '@/data/enterpriseMocks';
-import type { AccountStatus, ManagedUser } from '@/types/admin';
+import type { AccountStatus } from '@/types/admin';
 import type { UserRole } from '@/constants/routes';
 
 const delay = (ms: number) => new Promise((r) => setTimeout(r, ms));

@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Sidebar } from '@/components/ui/Sidebar';
-import { Header } from '@/components/ui/Header';
+import MainHeader from '@/components/header/MainHeader';
 
 const MainLayout: React.FC = () => {
   const { t } = useTranslation();
@@ -30,16 +30,12 @@ const MainLayout: React.FC = () => {
       {/* Main Layout Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Header Component */}
-        <Header
-          setIsMobileOpen={setIsMobileOpen}
-          hasSidebarLayout
-          isSidebarCollapsed={isCollapsed}
-        />
+        <MainHeader hasSidebar onOpenSidebar={() => setIsMobileOpen(true)} />
 
         {/* Content Outlet */}
         <main
           id="main-content"
-          className="flex-1 overflow-y-auto px-4 pb-4 pt-14 sm:px-5 sm:pb-5 sm:pt-16 md:px-6 md:pb-6"
+          className="flex-1 overflow-y-auto px-4 pb-4 pt-[72px] sm:px-5 sm:pb-5 sm:pt-[72px] md:px-6 md:pb-6"
           tabIndex={-1}
         >
           <Outlet />

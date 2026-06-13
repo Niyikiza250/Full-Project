@@ -79,8 +79,12 @@ const MemberDetails: React.FC = () => {
           </div>
           <div className="absolute -bottom-12 sm:-bottom-16 left-4 sm:left-10">
             <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-2xl sm:rounded-3xl bg-white dark:bg-slate-900 p-1.5 border-4 border-white dark:border-slate-900 shadow-xl">
-              <div className="w-full h-full rounded-xl sm:rounded-2xl bg-sda-blue/10 dark:bg-sda-blue/20 flex items-center justify-center text-sda-blue text-2xl sm:text-4xl font-bold shadow-inner">
-                {member.firstName[0]}{member.lastName[0]}
+              <div className="w-full h-full rounded-xl sm:rounded-2xl bg-sda-blue/10 dark:bg-sda-blue/20 flex items-center justify-center text-sda-blue text-2xl sm:text-4xl font-bold shadow-inner overflow-hidden">
+                {member.imageUrl ? (
+                  <img src={member.imageUrl} alt="" className="w-full h-full object-cover" />
+                ) : (
+                  `${member.firstName[0]}${member.lastName[0]}`
+                )}
               </div>
             </div>
           </div>

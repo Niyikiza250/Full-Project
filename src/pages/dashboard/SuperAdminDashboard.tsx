@@ -1,12 +1,12 @@
 import React from 'react';
 import {
   Users, Shield, Church, Calendar, Heart, UserCheck, Megaphone,
-  Activity, Settings, FileText, Bell, Database, Globe, Upload,
-  BarChart3, ClipboardList, Eye, AlertTriangle, CheckCircle, ArrowRight
+  Activity, Settings,
+  BarChart3, ClipboardList, AlertTriangle, CheckCircle, ArrowRight
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/constants/routes';
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, LineChart, Line } from 'recharts';
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import { motion } from 'framer-motion';
 import { useAnnouncements } from '@/hooks/useCommunicationModule';
 

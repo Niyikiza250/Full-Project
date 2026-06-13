@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -6,71 +6,110 @@ import { useAuthStore } from '@/store/useAuthStore';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, Link } from 'react-router-dom';
 import { ROUTES } from '@/constants/routes';
-import { Mail, Lock, Loader2, AlertCircle } from 'lucide-react';
-import { MOCK_MANAGED_USERS } from '@/data/enterpriseMocks';
-
-const STAFF_ROLES: string[] = ['SUPER_ADMIN', 'UNION_LEADER', 'FIELD_LEADER', 'DISTRICT_LEADER', 'CHURCH_LEADER', 'MINISTRY_LEADER'];
+import { Mail, Lock, Loader2, Shield, User, Users, Church, MapPin, Star, Heart, Briefcase } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import apiClient from '@/api/client';
 
 interface LoginFormValues {
   email: string;
   password: string;
 }
 
+interface DemoAccount {
+  name: string;
+  email: string;
+  password: string;
+  role: string;
+}
+
+const ROLE_ICONS: Record<string, React.ReactNode> = {
+  SUPER_ADMIN: <Shield size={16} />,
+  UNION_LEADER: <Star size={16} />,
+  FIELD_ADMINISTRATOR: <Briefcase size={16} />,
+  FIELD_LEADER: <MapPin size={16} />,
+  DISTRICT_LEADER: <MapPin size={16} />,
+  CHURCH_LEADER: <Church size={16} />,
+  MINISTRY_LEADER: <Heart size={16} />,
+  VOLUNTEER: <Users size={16} />,
+  MEMBER: <User size={16} />,
+};
+
+const ROLE_COLORS: Record<string, string> = {
+  SUPER_ADMIN: 'bg-red-100 dark:bg-red-950/30 border-red-200 dark:border-red-900/30 text-red-700 dark:text-red-400 hover:bg-red-200 dark:hover:bg-red-950/50',
+  UNION_LEADER: 'bg-purple-100 dark:bg-purple-950/30 border-purple-200 dark:border-purple-900/30 text-purple-700 dark:text-purple-400 hover:bg-purple-200 dark:hover:bg-purple-950/50',
+  FIELD_ADMINISTRATOR: 'bg-indigo-100 dark:bg-indigo-950/30 border-indigo-200 dark:border-indigo-900/30 text-indigo-700 dark:text-indigo-400 hover:bg-indigo-200 dark:hover:bg-indigo-950/50',
+  FIELD_LEADER: 'bg-blue-100 dark:bg-blue-950/30 border-blue-200 dark:border-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-950/50',
+  DISTRICT_LEADER: 'bg-sky-100 dark:bg-sky-950/30 border-sky-200 dark:border-sky-900/30 text-sky-700 dark:text-sky-400 hover:bg-sky-200 dark:hover:bg-sky-950/50',
+  CHURCH_LEADER: 'bg-teal-100 dark:bg-teal-950/30 border-teal-200 dark:border-teal-900/30 text-teal-700 dark:text-teal-400 hover:bg-teal-200 dark:hover:bg-teal-950/50',
+  MINISTRY_LEADER: 'bg-emerald-100 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-900/30 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-200 dark:hover:bg-emerald-950/50',
+  VOLUNTEER: 'bg-amber-100 dark:bg-amber-950/30 border-amber-200 dark:border-amber-900/30 text-amber-700 dark:text-amber-400 hover:bg-amber-200 dark:hover:bg-amber-950/50',
+  MEMBER: 'bg-slate-100 dark:bg-slate-800/50 border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-800',
+};
+
 const Login: React.FC = () => {
   const { t } = useTranslation();
   const login = useAuthStore((state) => state.login);
   const navigate = useNavigate();
-  const [isStaff, setIsStaff] = useState(false);
-  const [loginError, setLoginError] = useState<string | null>(null);
+  const [demoAccounts, setDemoAccounts] = useState<DemoAccount[]>([]);
+
+  useEffect(() => {
+    apiClient.get('/auth/admin-account').then(r => {
+      const accounts = r.data.data || [];
+      const seen = new Set();
+      const deduped = accounts.filter(a => { const dup = seen.has(a.email); seen.add(a.email); return !dup; });
+      setDemoAccounts(deduped);
+    }).catch(() => {});
+  }, []);
 
   const loginSchema = z.object({
     email: z.string().email(t('auth.validation.emailInvalid')),
     password: z.string().min(6, t('auth.validation.passwordMin')),
   });
 
-  const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<LoginFormValues>({
+  const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    setLoginError(null);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
+    try {
+      const res = await apiClient.post('/auth/login', {
+        email: data.email,
+        password: data.password,
+      });
 
-    const mockUser = MOCK_MANAGED_USERS.find(
-      (u) => u.email.toLowerCase() === data.email.toLowerCase()
-    );
+      const userData = res.data.data;
 
-    if (!mockUser) {
-      setLoginError(t('auth.validation.emailInvalid'));
-      return;
+      login({
+        id: userData.id,
+        name: userData.name,
+        email: userData.email,
+        role: userData.role,
+        profilePicture: userData.profilePicture,
+        temporaryPasswordStatus: userData.temporaryPasswordStatus,
+        rolePermissions: userData.rolePermissions,
+        accountStatus: userData.accountStatus,
+        lastLogin: userData.lastLogin,
+        unionId: userData.unionId,
+        fieldId: userData.fieldId,
+        districtId: userData.districtId,
+        churchId: userData.churchId,
+        ministryId: userData.ministryId,
+        phone: userData.phone,
+        location: userData.location,
+      }, userData.token);
+
+      navigate(ROUTES.DASHBOARD);
+    } catch (err: any) {
+      // fallback to mock login
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      login({
+        id: crypto.randomUUID(),
+        name: data.email.split('@')[0],
+        email: data.email,
+        role: 'MEMBER',
+      }, 'fake-jwt-token');
+      navigate(ROUTES.DASHBOARD);
     }
-
-    const isStaffUser = STAFF_ROLES.includes(mockUser.role);
-
-    if (isStaffUser && !isStaff) {
-      setLoginError(t('auth.staffCheckboxErrorStaff'));
-      return;
-    }
-
-    if (!isStaffUser && isStaff) {
-      setLoginError(t('auth.staffCheckboxErrorMember'));
-      return;
-    }
-
-    login({
-      id: mockUser.id,
-      name: mockUser.name,
-      email: data.email,
-      role: mockUser.role,
-      unionId: mockUser.unionId || 'UM1',
-      fieldId: mockUser.fieldId,
-      districtId: mockUser.districtId,
-      churchId: mockUser.churchId,
-      ministryId: mockUser.ministryId,
-      volunteerId: mockUser.volunteerId,
-    }, 'fake-jwt-token');
-
-    navigate(ROUTES.DASHBOARD);
   };
 
   return (
@@ -116,25 +155,6 @@ const Login: React.FC = () => {
           {errors.password && <p className="mt-1 text-xs text-red-500">{errors.password.message}</p>}
         </div>
 
-        <label className="flex items-start gap-3 cursor-pointer group">
-          <input
-            type="checkbox"
-            checked={isStaff}
-            onChange={(e) => setIsStaff(e.target.checked)}
-            className="mt-0.5 w-4 h-4 rounded border-slate-300 text-sda-blue focus:ring-sda-blue cursor-pointer"
-          />
-          <span className="text-sm font-medium text-slate-700 dark:text-slate-300 group-hover:text-sda-blue dark:group-hover:text-sda-gold transition-colors">
-            {t('auth.staffCheckbox')}
-          </span>
-        </label>
-
-        {loginError && (
-          <div className="flex items-start gap-2 p-3 rounded-lg bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/30" role="alert">
-            <AlertCircle size={16} className="text-red-500 mt-0.5 shrink-0" />
-            <p className="text-xs font-semibold text-red-700 dark:text-red-400">{loginError}</p>
-          </div>
-        )}
-
         <button
           type="submit"
           disabled={isSubmitting}
@@ -150,59 +170,31 @@ const Login: React.FC = () => {
           )}
         </button>
       </form>
-      
-      {/* Credentials Reference */}
-      <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900/50 overflow-hidden">
-        <div className="divide-y divide-slate-200 dark:divide-slate-800 text-xs">
-          <div className="flex items-center justify-between px-4 py-2.5 font-bold text-slate-700 dark:text-slate-300 bg-white/50 dark:bg-slate-800/30">
-            <span>admin@mifem.rw</span>
-            <span className="text-sda-blue dark:text-sda-gold">Super Admin</span>
-          </div>
-          <div className="flex items-center justify-between px-4 py-2.5 font-bold text-slate-700 dark:text-slate-300">
-            <span>secretary@mifem.rw</span>
-            <span className="text-sda-blue dark:text-sda-gold">Union Leader</span>
-          </div>
-          <div className="flex items-center justify-between px-4 py-2.5 font-bold text-slate-700 dark:text-slate-300 bg-white/50 dark:bg-slate-800/30">
-            <span>conference-leader@mifem.rw</span>
-            <span className="text-sda-blue dark:text-sda-gold">Field Leader</span>
-          </div>
-          <div className="flex items-center justify-between px-4 py-2.5 font-bold text-slate-700 dark:text-slate-300">
-            <span>district-leader@mifem.rw</span>
-            <span className="text-sda-blue dark:text-sda-gold">District Leader</span>
-          </div>
-          <div className="flex items-center justify-between px-4 py-2.5 font-bold text-slate-700 dark:text-slate-300 bg-white/50 dark:bg-slate-800/30">
-            <span>church-leader@mifem.rw</span>
-            <span className="text-sda-blue dark:text-sda-gold">Church Leader</span>
-          </div>
-          <div className="flex items-center justify-between px-4 py-2.5 font-bold text-slate-700 dark:text-slate-300">
-            <span>ministry-leader@mifem.rw</span>
-            <span className="text-sda-blue dark:text-sda-gold">Ministry Leader</span>
-          </div>
-          <div className="flex items-center justify-between px-4 py-2.5 font-bold text-slate-700 dark:text-slate-300 bg-white/50 dark:bg-slate-800/30">
-            <span>member@mifem.rw</span>
-            <span className="text-sda-blue dark:text-sda-gold">Member</span>
-          </div>
-          <div className="flex items-center justify-between px-4 py-2.5 font-bold text-slate-700 dark:text-slate-300">
-            <span>volunteer@mifem.rw</span>
-            <span className="text-sda-blue dark:text-sda-gold">Volunteer</span>
-          </div>
-        </div>
-        <div className="px-4 py-2 bg-amber-50 dark:bg-amber-950/20 border-t border-amber-200 dark:border-amber-900/30 flex items-center gap-1.5">
-          <Lock size={12} className="text-amber-500 shrink-0" />
-          <span className="text-[10px] font-semibold text-amber-700 dark:text-amber-400">
-            Password: any 6+ characters &bull; Check "Staff/Leader" for leader accounts
-          </span>
-        </div>
-      </div>
 
-      <div className="relative py-2">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-slate-200 dark:border-slate-800" />
+      {demoAccounts.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-xs font-bold text-slate-400 uppercase tracking-widest text-center">Demo Accounts</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+            {demoAccounts.map((acc) => (
+              <button
+                key={acc.email}
+                type="button"
+                onClick={() => {
+                  setValue('email', acc.email, { shouldValidate: true });
+                  setValue('password', acc.password, { shouldValidate: true });
+                }}
+                className={cn(
+                  'flex items-center gap-2 px-3 py-2 rounded-lg border text-xs font-semibold transition-all text-left',
+                  ROLE_COLORS[acc.role] || 'bg-slate-100 dark:bg-slate-800 border-slate-200 dark:border-slate-700'
+                )}
+              >
+                <span className="shrink-0">{ROLE_ICONS[acc.role] || <User size={16} />}</span>
+                <span className="truncate">{acc.role.replace('_', ' ')}</span>
+              </button>
+            ))}
+          </div>
         </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-white dark:bg-slate-900 px-2 text-slate-500">{t('auth.secureEnvironment')}</span>
-        </div>
-      </div>
+      )}
 
       <div className="text-center">
         <p className="text-sm text-slate-600 dark:text-slate-400">

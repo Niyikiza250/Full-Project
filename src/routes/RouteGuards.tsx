@@ -6,7 +6,7 @@ import { ROUTES, UserRole, canAccess } from '@/constants/routes';
 export const AdminRoute: React.FC = () => {
   const { user } = useAuthStore();
 
-  if (user?.role !== 'SUPER_ADMIN') {
+  if (user?.role !== 'SUPER_ADMIN' && user?.role !== 'FIELD_ADMINISTRATOR') {
     return <Navigate to={ROUTES.UNAUTHORIZED} replace />;
   }
 

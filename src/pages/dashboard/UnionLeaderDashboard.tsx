@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   Users, Map, Church, Calendar, Megaphone, BarChart3, FileText,
-  Activity, TrendingUp, ArrowUpRight, Award
+  Activity
 } from 'lucide-react';
 import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { Link } from 'react-router-dom';
