@@ -22,6 +22,7 @@ const Member = require('./Member');
 const MemberProfile = require('./MemberProfile');
 const MemberActivity = require('./MemberActivity');
 const MemberChangeRequest = require('./MemberChangeRequest');
+const MemberMinistryRole = require('./MemberMinistryRole');
 
 // Volunteers
 const Volunteer = require('./Volunteer');
@@ -56,7 +57,7 @@ const MissionWord = require('./MissionWord');
 // Admin
 const AuditLog = require('./AuditLog');
 const AdminActivityLog = require('./AdminActivityLog');
-const ReportExport = require('./ReportExport');
+
 
 // Prayer & Counseling
 const PrayerRequest = require('./PrayerRequest');
@@ -68,6 +69,12 @@ const Lesson = require('./Lesson');
 const Quiz = require('./Quiz');
 const QuizAttempt = require('./QuizAttempt');
 const Certificate = require('./Certificate');
+
+// Small Groups
+const SmallGroup = require('./SmallGroup');
+const GroupMember = require('./GroupMember');
+const SpecialNeed = require('./SpecialNeed');
+const PrivacyConsent = require('./PrivacyConsent');
 
 // Document Management
 const Document = require('./Document');
@@ -84,16 +91,17 @@ const Task = require('./Task');
 const models = {
   User, Role, Permission, UserPermission, PasswordReset, OTPVerification, LoginSession,
   Union, Field, District, Church, Ministry,
-  Member, MemberProfile, MemberActivity, MemberChangeRequest,
+  Member, MemberProfile, MemberActivity, MemberChangeRequest, MemberMinistryRole,
   Volunteer,
   Event, EventTimeline, EventRegistration,
   AttendanceSession, AttendanceCheckin,
   Announcement, AnnouncementRead, BulletinItem, InternalMessage, SmsTemplate, EmailSubscription,
   GroupMessage, DiscussionForum, ForumPost,
   Achievement, HeroSlide, SystemSetting, BlueCard, MissionWord,
-  AuditLog, AdminActivityLog, ReportExport,
+  AuditLog, AdminActivityLog,
   PrayerRequest, CounselingRequest,
   Course, Lesson, Quiz, QuizAttempt, Certificate,
+  SmallGroup, GroupMember, SpecialNeed, PrivacyConsent,
   Document, Notification,
   ServiceHour, VolunteerRecognition, VolunteerAvailability,
   Task,
@@ -159,6 +167,10 @@ const setupAssociations = () => {
   MemberChangeRequest.belongsTo(Member, { foreignKey: 'memberId', as: 'member' });
   MemberChangeRequest.belongsTo(User, { foreignKey: 'submittedBy', as: 'submittedByUser' });
 
+  // Member -> Ministry Roles (many-to-many)
+  Member.hasMany(MemberMinistryRole, { foreignKey: 'memberId', as: 'ministryRoles', onDelete: 'CASCADE' });
+  MemberMinistryRole.belongsTo(Member, { foreignKey: 'memberId', as: 'member' });
+
   // Event relationships
   Event.hasMany(EventTimeline, { foreignKey: 'eventId', as: 'timeline' });
   EventTimeline.belongsTo(Event, { foreignKey: 'eventId', as: 'event' });
@@ -194,9 +206,6 @@ const setupAssociations = () => {
   // Audit / Activity
   AuditLog.belongsTo(User, { foreignKey: 'actor', as: 'actorUser' });
   AdminActivityLog.belongsTo(User, { foreignKey: 'userId', as: 'user' });
-
-  // Reports
-  ReportExport.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
   // NEW ASSOCIATIONS
 
@@ -268,6 +277,20 @@ const setupAssociations = () => {
   // Task associations
   Task.belongsTo(User, { foreignKey: 'assignedTo', as: 'assignee' });
   Task.belongsTo(User, { foreignKey: 'assignedBy', as: 'assigner' });
+
+  // SmallGroup associations
+  SmallGroup.hasMany(GroupMember, { foreignKey: 'groupId', as: 'members' });
+  GroupMember.belongsTo(SmallGroup, { foreignKey: 'groupId', as: 'group' });
+  GroupMember.belongsTo(Member, { foreignKey: 'memberId', as: 'member' });
+  SmallGroup.belongsTo(Church, { foreignKey: 'churchId', as: 'church' });
+
+  // SpecialNeed associations
+  SpecialNeed.belongsTo(Member, { foreignKey: 'memberId', as: 'member' });
+  Member.hasMany(SpecialNeed, { foreignKey: 'memberId', as: 'specialNeeds' });
+
+  // PrivacyConsent associations
+  PrivacyConsent.belongsTo(Member, { foreignKey: 'memberId', as: 'member' });
+  Member.hasMany(PrivacyConsent, { foreignKey: 'memberId', as: 'privacyConsents' });
 
   logger.info('All associations established');
 };

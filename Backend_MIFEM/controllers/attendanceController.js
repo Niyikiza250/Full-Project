@@ -22,7 +22,7 @@ const listSessions = async (req, res) => {
 
     return paginated(res, rows, count, page, limit);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -39,7 +39,7 @@ const createSession = async (req, res) => {
 
     return success(res, session, 'Session created', 201);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -51,7 +51,7 @@ const getSession = async (req, res) => {
     if (!session) return error(res, 'Session not found', 404);
     return success(res, session);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -62,7 +62,7 @@ const updateSession = async (req, res) => {
     await session.update(req.body);
     return success(res, session, 'Session updated');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -76,7 +76,7 @@ const closeSession = async (req, res) => {
 
     return success(res, session, 'Session closed');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -105,7 +105,7 @@ const checkIn = async (req, res) => {
 
     return success(res, checkin, 'Checked in', 201);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -117,7 +117,7 @@ const getCheckins = async (req, res) => {
     });
     return success(res, checkins);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -137,7 +137,7 @@ const getTrends = async (req, res) => {
     const sessions = await AttendanceSession.findAll({ where, order: [['date', 'ASC']] });
     return success(res, sessions);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 

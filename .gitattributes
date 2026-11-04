@@ -1,0 +1,5 @@
+* text=auto eol=lf
+*.{ts,tsx,js,jsx,json,css,html,md} text eol=lf
+*.png text=false
+*.jpg text=false
+*.svg text=false

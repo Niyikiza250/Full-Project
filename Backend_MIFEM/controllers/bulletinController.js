@@ -9,7 +9,7 @@ const listBulletins = async (req, res) => {
     });
     return success(res, items);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 

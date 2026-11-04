@@ -1,121 +1,356 @@
 const jwt = require('jsonwebtoken');
-const { User, Role, LoginSession, OTPVerification, PasswordReset, Volunteer, Member } = require('../models');
+const { User, Role, OTPVerification, PasswordReset, Volunteer, Member, MemberMinistryRole } = require('../models');
 const { success, error } = require('../utils/response');
 const logger = require('../utils/logger');
 const { v4: uuidv4 } = require('uuid');
 const { sendPasswordResetEmail } = require('../utils/email');
+const { sequelize } = require('../config/db');
+
+const DEMO_ACCOUNTS = [
+  { name: 'Super Admin', email: 'admin@mifem.org', password: process.env.DEMO_ADMIN_PASSWORD || 'Admin@123', roleName: 'SUPER_ADMIN' },
+  { name: 'Union Leader', email: 'union@mifem.org', password: process.env.DEMO_USER_PASSWORD || 'Demo@123', roleName: 'UNION_LEADER' },
+  { name: 'Field Admin', email: 'fieldadmin@mifem.org', password: process.env.DEMO_USER_PASSWORD || 'Demo@123', roleName: 'FIELD_ADMINISTRATOR' },
+  { name: 'Field Leader', email: 'fieldleader@mifem.org', password: process.env.DEMO_USER_PASSWORD || 'Demo@123', roleName: 'FIELD_LEADER' },
+  { name: 'District Leader', email: 'districtleader@mifem.org', password: process.env.DEMO_USER_PASSWORD || 'Demo@123', roleName: 'DISTRICT_LEADER' },
+  { name: 'Church Leader', email: 'churchleader@mifem.org', password: process.env.DEMO_USER_PASSWORD || 'Demo@123', roleName: 'CHURCH_LEADER' },
+  { name: 'Ministry Leader', email: 'ministryleader@mifem.org', password: process.env.DEMO_USER_PASSWORD || 'Demo@123', roleName: 'MINISTRY_LEADER' },
+  { name: 'Volunteer', email: 'volunteer@mifem.org', password: process.env.DEMO_USER_PASSWORD || 'Demo@123', roleName: 'VOLUNTEER' },
+  { name: 'Member', email: 'member@mifem.org', password: process.env.DEMO_USER_PASSWORD || 'Demo@123', roleName: 'MEMBER' },
+];
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN || '30d' });
 };
 
+const calculateAgeGroup = (dateOfBirth) => {
+  if (!dateOfBirth) return null;
+  const birth = new Date(dateOfBirth);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  if (age >= 13 && age <= 25) return 'YOUTH';
+  if (age >= 26 && age <= 35) return 'YOUNG_ADULT';
+  if (age >= 36 && age <= 60) return 'ADULT';
+  if (age > 60) return 'SENIOR';
+  return null;
+};
+
 const registerMember = async (req, res) => {
+  let t;
   try {
-    const { email, password, name, phone, fieldId, districtId, churchId } = req.body;
+    t = await sequelize.transaction();
+    const {
+      email, password, name, phone,
+      firstName, lastName, gender, dateOfBirth, whatsapp,
+      village, sector, district,
+      emergencyName, emergencyPhone, ministryRoles,
+      sabbathClass, baptismDate, imageUrl, churchId,
+      fieldId, districtId,
+    } = req.body;
 
     if (!email || !password || !name) {
+      if (t) await t.rollback();
       return error(res, 'Name, email, and password are required', 400);
     }
 
     if (password.length < 6) {
+      if (t) await t.rollback();
       return error(res, 'Password must be at least 6 characters', 400);
     }
 
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
+      if (t) await t.rollback();
       return error(res, 'User with this email already exists', 400);
     }
 
     const memberRole = await Role.findOne({ where: { name: 'MEMBER' } });
     if (!memberRole) {
+      if (t) await t.rollback();
       return error(res, 'MEMBER role not found. Contact an administrator.', 500);
+    }
+
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (churchId && !UUID_RE.test(churchId)) {
+      if (t) await t.rollback();
+      return error(res, 'Invalid church reference. Please select a valid church.', 400);
+    }
+    if (fieldId && !UUID_RE.test(fieldId)) {
+      if (t) await t.rollback();
+      return error(res, 'Invalid field reference. Please select a valid mission field.', 400);
+    }
+    if (districtId && !UUID_RE.test(districtId)) {
+      if (t) await t.rollback();
+      return error(res, 'Invalid district reference. Please select a valid district.', 400);
     }
 
     const user = await User.create({
       name,
       email,
       password,
-      phone,
+      phone: phone || '',
       roleId: memberRole.id,
-      fieldId,
-      districtId,
-      churchId,
+      churchId: churchId || null,
+      fieldId: fieldId || null,
+      districtId: districtId || null,
       accountStatus: 'ACTIVE',
-    });
+    }, { transaction: t });
 
-    // Also create a linked Member record with the same phone
     const nameParts = name.trim().split(/\s+/);
-    await Member.create({
-      firstName: nameParts[0] || name,
-      lastName: nameParts.slice(1).join(' ') || name,
-      email,
-      phone,
-      churchId,
-      status: 'ACTIVE',
-      createdBy: user.id,
-    });
+    const computedAgeGroup = calculateAgeGroup(dateOfBirth);
 
-    return success(res, user, 'Registration successful', 201);
+    const member = await Member.create({
+      firstName: (firstName || nameParts[0] || name).substring(0, 50),
+      lastName: (lastName || nameParts.slice(1).join(' ') || '').substring(0, 50),
+      email,
+      phone: phone || '',
+      whatsapp: whatsapp || null,
+      gender: gender || null,
+      dateOfBirth: dateOfBirth || null,
+      ageGroup: computedAgeGroup,
+      churchId: churchId || null,
+      status: 'ACTIVE',
+      registrationType: 'MEMBER',
+      sabbathClass: sabbathClass || '',
+      baptismDate: baptismDate || null,
+      imageUrl: imageUrl || '',
+      address: (village || sector || district) ? `${village || ''}, ${sector || ''}, ${district || ''}`.trim() : '',
+      village: village || null,
+      sector: sector || null,
+      district: district || null,
+      emergencyName: emergencyName || null,
+      emergencyPhone: emergencyPhone || null,
+      createdBy: user.id,
+    }, { transaction: t });
+
+    if (Array.isArray(ministryRoles) && ministryRoles.length > 0) {
+      const validRoles = ['CHOIR', 'OUTREACH', 'TEACHING', 'HOSPITALITY', 'DEACON', 'ELDER',
+        'SABBATH_SCHOOL_TEACHER', 'PATHFINDER_LEADER', 'ADVENTIST_YOUTH_LEADER',
+        'COMMUNITY_SERVICES', 'OTHER'];
+      const roleRecords = ministryRoles
+        .filter(r => validRoles.includes(r))
+        .map(r => ({
+          memberId: member.id,
+          role: r,
+          assignedBy: user.id,
+        }));
+      if (roleRecords.length > 0) {
+        await MemberMinistryRole.bulkCreate(roleRecords, { transaction: t });
+      }
+    }
+
+    await t.commit();
+
+    const token = generateToken(user.id);
+
+    const role = await Role.findByPk(user.roleId);
+    return success(res, {
+      _id: user.id,
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: role ? role.name : 'MEMBER',
+      roleId: user.roleId,
+      churchId: user.churchId,
+      accountStatus: user.accountStatus,
+      token,
+    }, 'Registration successful', 201);
   } catch (err) {
-    logger.error(`Register member error: ${err.message}`);
-    return error(res, 'Server error', 500, err.message);
+    if (t) {
+      try { await t.rollback(); } catch (rollbackErr) {
+        logger.error(`Rollback error during register member: ${rollbackErr.message}`);
+      }
+    }
+    logger.error(`Register member error: ${err.name}: ${err.message}`);
+    if (err.name === 'SequelizeForeignKeyConstraintError') {
+      return error(res, 'Invalid reference. Please check your selections and try again.', 400);
+    }
+    if (err.name === 'SequelizeUniqueConstraintError') {
+      return error(res, 'A record with this information already exists.', 409);
+    }
+    if (err.name === 'SequelizeValidationError') {
+      const messages = err.errors.map(e => e.message).join(', ');
+      return error(res, `Validation error: ${messages}`, 400);
+    }
+    return error(res, 'Server error during registration. Please try again.', 500);
   }
 };
 
 const registerVolunteer = async (req, res) => {
+  let t;
   try {
-    const { email, password, name, phone, provinceCode, provinceName, districtCode, districtName, sectorCode, sectorName, cellCode, cellName, villageCode, villageName } = req.body;
+    t = await sequelize.transaction();
+    const {
+      email, password, name, phone,
+      firstName, lastName, gender, dateOfBirth, whatsapp,
+      village, sector, district: memberDistrict, churchId,
+      provinceCode, provinceName, districtCode, districtName,
+      sectorCode, sectorName, cellCode, cellName, villageCode, villageName,
+      emergencyName, emergencyPhone, ministryRoles,
+      sabbathClass, baptismDate, imageUrl,
+    } = req.body;
 
     if (!email || !password || !name) {
+      await t.rollback();
       return error(res, 'Name, email, and password are required', 400);
     }
 
     if (password.length < 6) {
+      await t.rollback();
       return error(res, 'Password must be at least 6 characters', 400);
     }
 
     const existingUser = await User.findOne({ where: { email } });
     if (existingUser) {
+      await t.rollback();
       return error(res, 'User with this email already exists', 400);
     }
 
     const volunteerRole = await Role.findOne({ where: { name: 'VOLUNTEER' } });
     if (!volunteerRole) {
+      await t.rollback();
       return error(res, 'VOLUNTEER role not found. Contact an administrator.', 500);
+    }
+
+    const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (churchId && !UUID_RE.test(churchId)) {
+      await t.rollback();
+      return error(res, 'Invalid church reference. Please select a valid church.', 400);
+    }
+
+    if (ministryRoles && !Array.isArray(ministryRoles)) {
+      await t.rollback();
+      return error(res, 'ministryRoles must be an array', 400);
+    }
+
+    if (Array.isArray(ministryRoles) && ministryRoles.length > 0) {
+      const validMinistryRoles = ['CHOIR', 'OUTREACH', 'TEACHING', 'HOSPITALITY', 'DEACON', 'ELDER',
+        'SABBATH_SCHOOL_TEACHER', 'PATHFINDER_LEADER', 'ADVENTIST_YOUTH_LEADER',
+        'COMMUNITY_SERVICES', 'OTHER'];
+      const invalid = ministryRoles.filter(r => !validMinistryRoles.includes(r));
+      if (invalid.length > 0) {
+        await t.rollback();
+        return error(res, `Invalid ministry role(s): ${invalid.join(', ')}`, 400);
+      }
     }
 
     const user = await User.create({
       name,
       email,
       password,
-      phone,
+      phone: phone || '',
       roleId: volunteerRole.id,
+      churchId: churchId || null,
       accountStatus: 'ACTIVE',
-    });
+    }, { transaction: t });
 
     await Volunteer.create({
       userId: user.id,
       name,
       email,
-      phone,
-      password,
-      provinceCode,
-      provinceName,
-      districtCode,
-      districtName,
-      sectorCode,
-      sectorName,
-      cellCode,
-      cellName,
-      villageCode,
-      villageName,
+      phone: phone || '',
+      provinceCode: provinceCode || null,
+      provinceName: provinceName || null,
+      districtCode: districtCode || null,
+      districtName: districtName || null,
+      sectorCode: sectorCode || null,
+      sectorName: sectorName || null,
+      cellCode: cellCode || null,
+      cellName: cellName || null,
+      villageCode: villageCode || null,
+      villageName: villageName || null,
       status: 'ACTIVE',
-    });
+    }, { transaction: t });
 
-    return success(res, user, 'Registration successful', 201);
+    const nameParts = name.trim().split(/\s+/);
+    const computedAgeGroup = calculateAgeGroup(dateOfBirth);
+
+    const member = await Member.create({
+      firstName: firstName || nameParts[0] || name,
+      lastName: lastName || nameParts.slice(1).join(' ') || '',
+      email,
+      phone: phone || '',
+      whatsapp: whatsapp || null,
+      gender: gender || null,
+      dateOfBirth: dateOfBirth || null,
+      ageGroup: computedAgeGroup,
+      churchId: churchId || null,
+      status: 'ACTIVE',
+      registrationType: 'VOLUNTEER',
+      sabbathClass: sabbathClass || '',
+      baptismDate: baptismDate || null,
+      imageUrl: imageUrl || '',
+      address: (village || sector || memberDistrict) ? `${village || ''}, ${sector || ''}, ${memberDistrict || ''}`.trim() : '',
+      village: village || null,
+      sector: sector || null,
+      district: memberDistrict || null,
+      provinceCode: provinceCode || null,
+      provinceName: provinceName || null,
+      districtCode: districtCode || null,
+      districtName: districtName || null,
+      sectorCode: sectorCode || null,
+      sectorName: sectorName || null,
+      cellCode: cellCode || null,
+      cellName: cellName || null,
+      villageCode: villageCode || null,
+      villageName: villageName || null,
+      emergencyName: emergencyName || null,
+      emergencyPhone: emergencyPhone || null,
+      createdBy: user.id,
+    }, { transaction: t });
+
+    if (Array.isArray(ministryRoles) && ministryRoles.length > 0) {
+      const validRoles = ['CHOIR', 'OUTREACH', 'TEACHING', 'HOSPITALITY', 'DEACON', 'ELDER',
+        'SABBATH_SCHOOL_TEACHER', 'PATHFINDER_LEADER', 'ADVENTIST_YOUTH_LEADER',
+        'COMMUNITY_SERVICES', 'OTHER'];
+      const roleRecords = ministryRoles
+        .filter(r => validRoles.includes(r))
+        .map(r => ({
+          memberId: member.id,
+          role: r,
+          assignedBy: user.id,
+        }));
+      if (roleRecords.length > 0) {
+        await MemberMinistryRole.bulkCreate(roleRecords, { transaction: t });
+      }
+    }
+
+    await t.commit();
+
+    const token = generateToken(user.id);
+
+    return success(res, {
+      _id: user.id,
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      phone: user.phone,
+      role: 'VOLUNTEER',
+      roleId: user.roleId,
+      churchId: user.churchId,
+      accountStatus: user.accountStatus,
+      token,
+    }, 'Registration successful', 201);
   } catch (err) {
-    logger.error(`Register volunteer error: ${err.message}`);
-    return error(res, 'Server error', 500, err.message);
+    if (t) {
+      try { await t.rollback(); } catch (rollbackErr) {
+        logger.error(`Rollback error during register volunteer: ${rollbackErr.message}`);
+      }
+    }
+    logger.error(`Register volunteer error: ${err.name}: ${err.message}`);
+    if (err.name === 'SequelizeForeignKeyConstraintError') {
+      return error(res, 'Invalid reference. Please check your selections and try again.', 400);
+    }
+    if (err.name === 'SequelizeUniqueConstraintError') {
+      return error(res, 'A record with this information already exists.', 409);
+    }
+    if (err.name === 'SequelizeValidationError') {
+      const messages = err.errors.map(e => e.message).join(', ');
+      return error(res, `Validation error: ${messages}`, 400);
+    }
+    return error(res, 'Server error during registration. Please try again.', 500);
   }
 };
 
@@ -136,16 +371,33 @@ const registerAdmin = async (req, res) => {
       return error(res, 'User with this email already exists', 400);
     }
 
+    if (!roleId) {
+      return error(res, 'Role is required', 400);
+    }
+
+    const requestedRole = await Role.findByPk(roleId);
+    if (!requestedRole) {
+      return error(res, 'Invalid role', 400);
+    }
+
+    const requesterRole = req.user && req.user.role
+      ? (req.user.role.name || req.user.role)
+      : '';
+    const restrictedRoles = ['SUPER_ADMIN', 'UNION_LEADER'];
+    if (requesterRole !== 'SUPER_ADMIN' && restrictedRoles.includes(requestedRole.name)) {
+      return error(res, 'Cannot assign the specified role', 403);
+    }
+
     const user = await User.create({
       name,
       email,
       password,
-      phone,
-      roleId,
-      unionId,
-      fieldId,
-      districtId,
-      churchId,
+      phone: phone || '',
+      roleId: requestedRole.id,
+      unionId: unionId || null,
+      fieldId: fieldId || null,
+      districtId: districtId || null,
+      churchId: churchId || null,
       createdBy: req.user ? req.user.id : null,
       accountStatus: 'ACTIVE',
     });
@@ -157,12 +409,16 @@ const registerAdmin = async (req, res) => {
       id: user.id,
       name: user.name,
       email: user.email,
+      phone: user.phone,
       role: user.roleId,
       token,
     }, 'Admin registered successfully', 201);
   } catch (err) {
-    logger.error(`Register error: ${err.message}`);
-    return error(res, 'Server error', 500, err.message);
+    logger.error(`Register admin error: ${err.message}`);
+    if (err.name === 'SequelizeUniqueConstraintError') {
+      return error(res, 'A user with this email already exists.', 409);
+    }
+    return error(res, 'Server error during registration.', 500);
   }
 };
 
@@ -219,7 +475,7 @@ const loginAdmin = async (req, res) => {
     }, 'Login successful');
   } catch (err) {
     logger.error(`Login error: ${err.message}`);
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -258,7 +514,7 @@ const getMe = async (req, res) => {
       createdAt: user.createdAt,
     });
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -281,7 +537,7 @@ const forgotPassword = async (req, res) => {
 
     return success(res, null, 'If the email exists, a reset link has been sent');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -309,7 +565,7 @@ const resetPassword = async (req, res) => {
 
     return success(res, null, 'Password reset successful');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -335,7 +591,7 @@ const verifyOTP = async (req, res) => {
 
     return success(res, { token }, 'OTP verified successfully');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -354,7 +610,7 @@ const changePassword = async (req, res) => {
 
     return success(res, null, 'Password changed successfully');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -372,32 +628,23 @@ const forceChangePassword = async (req, res) => {
     await user.update({ password: newPassword, temporaryPasswordStatus: false });
     return success(res, null, 'Password changed successfully');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
 const getAdminAccount = async (req, res) => {
   try {
-    const demoEmails = [
-      'admin@mifem.org',
-      'union@mifem.org',
-      'fieldadmin@mifem.org',
-      'fieldleader@mifem.org',
-      'districtleader@mifem.org',
-      'churchleader@mifem.org',
-      'ministryleader@mifem.org',
-      'volunteer@mifem.org',
-      'member@mifem.org',
-    ];
+    const demoEmails = DEMO_ACCOUNTS.map(d => d.email);
+    const demoPasswordMap = Object.fromEntries(DEMO_ACCOUNTS.map(d => [d.email, d.password]));
     const users = await User.findAll({
       where: { email: demoEmails },
       include: [{ model: Role, as: 'role', attributes: ['name'] }],
-      attributes: ['name', 'email', 'password', 'roleId'],
+      attributes: ['name', 'email', 'roleId'],
     });
     const accounts = users.map(u => ({
       name: u.name,
       email: u.email,
-      password: u.password,
+      password: demoPasswordMap[u.email] || 'Demo@123',
       role: u.role ? u.role.name : 'UNKNOWN',
     }));
     return success(res, accounts);
@@ -440,8 +687,43 @@ const updateProfile = async (req, res) => {
       temporaryPasswordStatus: user.temporaryPasswordStatus,
     }, 'Profile updated successfully');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
-module.exports = { registerAdmin, registerMember, registerVolunteer, loginAdmin, getMe, forgotPassword, resetPassword, verifyOTP, changePassword, getAdminAccount, updateProfile, forceChangePassword };
+const ensureDemoAccounts = async (req, res) => {
+  try {
+    const results = [];
+    for (const demo of DEMO_ACCOUNTS) {
+      const role = await Role.findOne({ where: { name: demo.roleName } });
+      if (!role) {
+        results.push({ email: demo.email, status: 'SKIPPED', reason: `Role ${demo.roleName} not found` });
+        continue;
+      }
+      const [user, created] = await User.findOrCreate({
+        where: { email: demo.email },
+        defaults: {
+          name: demo.name,
+          email: demo.email,
+          password: demo.password,
+          roleId: role.id,
+          accountStatus: 'ACTIVE',
+        },
+      });
+      if (!created) {
+        user.name = demo.name;
+        user.roleId = role.id;
+        user.accountStatus = 'ACTIVE';
+        user.password = demo.password;
+        user.changed('password', true);
+        await user.save();
+      }
+      results.push({ email: demo.email, status: created ? 'CREATED' : 'RESET' });
+    }
+    return success(res, results, 'Demo accounts ensured');
+  } catch (err) {
+    return error(res, 'Failed to ensure demo accounts', 500);
+  }
+};
+
+module.exports = { registerAdmin, registerMember, registerVolunteer, loginAdmin, getMe, forgotPassword, resetPassword, verifyOTP, changePassword, getAdminAccount, updateProfile, forceChangePassword, ensureDemoAccounts };

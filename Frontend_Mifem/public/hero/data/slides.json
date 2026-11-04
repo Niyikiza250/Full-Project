@@ -1,0 +1,44 @@
+[
+  {
+    "id": "slide-2",
+    "title": "Empowering Rwandan Women Through Skills: MIFEM Tofu & Home Essentials Training",
+    "description": "This powerful image showcases Rwandan mothers and young women coming together in a collaborative learning environment under the MIFEM program. Dressed in coordinated white and blue uniforms with the MIFEM logo, they participate in a hands-on training session focused on tofu cooking and essential home economics skills.\n\nIn a well-organized and supportive kitchen classroom, participants actively engage in demonstration, observation, and teamwork as they learn modern and practical cooking techniques. Fresh ingredients, cooking tools, and prepared tofu are arranged on the table, symbolizing both learning and real-life application.\n\nThe atmosphere reflects empowerment, unity, and knowledge sharing—highlighting how MIFEM is building stronger women, stronger families, and stronger communities through practical skills development.",
+    "bgColor": "bg-sda-blue",
+    "overlayFrom": "from-sda-blue/85",
+    "overlayTo": "to-slate-950/70",
+    "bgImage": "/hero/images/slide-2.png",
+    "primaryCta": {
+      "label": "Join Now",
+      "href": "/register"
+    },
+    "active": true
+  },
+  {
+    "id": "slide-1",
+    "title": "MIFEM Digital Skills Academy: Empowering Women Through Technology Training",
+    "description": "This vibrant image showcases a group of Rwandan women and girls actively participating in a modern technology training session under the MIFEM initiative. Dressed in matching blue MIFEM T-shirts, they are engaged in hands-on digital learning, including computer skills, coding, electronics, and collaborative tech projects.\n\nIn a bright and well-equipped classroom, participants work together on laptops and technical tools while being guided in a supportive learning environment. The atmosphere reflects teamwork, innovation, and empowerment as women build essential digital skills for the future.\n\nThis scene represents the MIFEM mission of transforming lives through education, technology, and leadership—creating a generation of confident women ready to lead in the digital world.",
+    "bgColor": "bg-slate-900",
+    "overlayFrom": "from-slate-900/80",
+    "overlayTo": "to-slate-950/60",
+    "bgImage": "/hero/images/slide-1.png",
+    "primaryCta": {
+      "label": "Get Started",
+      "href": "/login"
+    },
+    "active": true
+  },
+  {
+    "id": "slide-3",
+    "title": "MIFEM Sports Power: Strong Women, Strong Future Through Unity and Fitness",
+    "description": "This inspiring image captures a large group of MIFEM women actively participating in various sports activities, showcasing strength, unity, and empowerment. Dressed in matching blue MIFEM T-shirts, the women are seen running, playing basketball, volleyball, and engaging in fitness exercises with high energy and enthusiasm.\n\nThe outdoor sports environment is vibrant and lively, with a modern athletic field, green surroundings, and a positive community atmosphere. Every participant is full of motivation, teamwork, and joy, reflecting a powerful message of health, discipline, and personal development.\n\nThis visual represents more than sports—it symbolizes empowerment, confidence, and the collective growth of women coming together to build a stronger future through physical activity and unity under the MIFEM initiative.",
+    "bgColor": "bg-slate-950",
+    "overlayFrom": "from-slate-950/85",
+    "overlayTo": "to-sda-blue/60",
+    "bgImage": "/hero/images/slide-3.png",
+    "primaryCta": {
+      "label": "Get Started",
+      "href": "/login"
+    },
+    "active": true
+  }
+]

@@ -16,7 +16,7 @@ const listAchievements = async (req, res) => {
     });
     return success(res, achievements);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -34,7 +34,7 @@ const saveAchievement = async (req, res) => {
 
     return success(res, { ok: true }, 'Achievement saved');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -56,7 +56,7 @@ const deleteAchievement = async (req, res) => {
     await Achievement.destroy({ where: { id } });
     return success(res, { ok: true }, 'Achievement deleted');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -86,7 +86,7 @@ const uploadAchievementImage = async (req, res) => {
     const publicPath = `/uploads/${filename}`;
     return success(res, { path: publicPath }, 'Image uploaded');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 

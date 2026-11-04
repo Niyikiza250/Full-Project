@@ -33,7 +33,7 @@ const healthCheck = async (req, res) => {
     }, 'Health check successful');
   } catch (err) {
     logger.error(`Health check error: ${err.message}`);
-    return error(res, 'Health check failed', 500, err.message);
+    return error(res, 'Health check failed', 500);
   }
 };
 

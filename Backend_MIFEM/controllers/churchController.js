@@ -9,7 +9,7 @@ const listUnions = async (req, res) => {
     const unions = await Union.findAll({ order: [['name', 'ASC']] });
     return success(res, unions);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -21,7 +21,7 @@ const getUnion = async (req, res) => {
     if (!union) return error(res, 'Union not found', 404);
     return success(res, union);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -33,7 +33,7 @@ const createUnion = async (req, res) => {
     const union = await Union.create({ name, code, address, createdBy: req.user.id });
     return success(res, union, 'Union created', 201);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -49,7 +49,7 @@ const updateUnion = async (req, res) => {
     await union.update(unionUpdates);
     return success(res, union, 'Union updated');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -62,7 +62,7 @@ const deleteUnion = async (req, res) => {
     await union.destroy();
     return success(res, null, 'Union deleted');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -92,7 +92,7 @@ const listFields = async (req, res) => {
     });
     return paginated(res, rows, count, page, limit);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -107,7 +107,7 @@ const getField = async (req, res) => {
     if (!field) return error(res, 'Field not found', 404);
     return success(res, field);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -119,7 +119,7 @@ const createField = async (req, res) => {
     const field = await Field.create({ name, code, unionId, createdBy: req.user.id });
     return success(res, field, 'Field created', 201);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -135,7 +135,7 @@ const updateField = async (req, res) => {
     await field.update(fieldUpdates);
     return success(res, field, 'Field updated');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -150,7 +150,7 @@ const deleteField = async (req, res) => {
     await field.destroy();
     return success(res, null, 'Field deleted');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -180,7 +180,7 @@ const listDistricts = async (req, res) => {
     });
     return paginated(res, rows, count, page, limit);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -195,7 +195,7 @@ const getDistrict = async (req, res) => {
     if (!district) return error(res, 'District not found', 404);
     return success(res, district);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -207,7 +207,7 @@ const createDistrict = async (req, res) => {
     const district = await District.create({ name, fieldId, createdBy: req.user.id });
     return success(res, district, 'District created', 201);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -223,7 +223,7 @@ const updateDistrict = async (req, res) => {
     await district.update(districtUpdates);
     return success(res, district, 'District updated');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -238,7 +238,7 @@ const deleteDistrict = async (req, res) => {
     await district.destroy();
     return success(res, null, 'District deleted');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -274,7 +274,7 @@ const listChurches = async (req, res) => {
     });
     return paginated(res, rows, count, page, limit);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -319,7 +319,7 @@ const listNearbyChurches = async (req, res) => {
 
     return success(res, nearby, 'Nearby churches retrieved');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -334,7 +334,7 @@ const getChurch = async (req, res) => {
     if (!church) return error(res, 'Church not found', 404);
     return success(res, church);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -346,7 +346,7 @@ const createChurch = async (req, res) => {
     const church = await Church.create({ name, districtId, zoneName, address, createdBy: req.user.id });
     return success(res, church, 'Church created', 201);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -362,7 +362,7 @@ const updateChurch = async (req, res) => {
     await church.update(churchUpdates);
     return success(res, church, 'Church updated');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -373,7 +373,7 @@ const deleteChurch = async (req, res) => {
     await church.destroy();
     return success(res, null, 'Church deleted');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -389,7 +389,7 @@ const listMinistries = async (req, res) => {
     });
     return success(res, ministries);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -401,7 +401,7 @@ const createMinistry = async (req, res) => {
     const ministry = await Ministry.create({ name, description, churchId, createdBy: req.user.id });
     return success(res, ministry, 'Ministry created', 201);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -417,7 +417,7 @@ const updateMinistry = async (req, res) => {
     await ministry.update(ministryUpdates);
     return success(res, ministry, 'Ministry updated');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -428,7 +428,7 @@ const deleteMinistry = async (req, res) => {
     await ministry.destroy();
     return success(res, null, 'Ministry deleted');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -466,7 +466,7 @@ const assignMinistryMember = async (req, res) => {
 
     return success(res, result, 'User assigned to ministry');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -500,7 +500,7 @@ const assignMinistryLeader = async (req, res) => {
 
     return success(res, ministry, 'Ministry leader assigned');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -536,7 +536,7 @@ const removeMinistryMember = async (req, res) => {
 
     return success(res, null, 'User removed from ministry');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 

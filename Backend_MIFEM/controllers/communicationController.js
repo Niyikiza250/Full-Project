@@ -25,7 +25,7 @@ const listMessages = async (req, res) => {
 
     return paginated(res, rows, count, page, limit);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -50,7 +50,7 @@ const sendMessage = async (req, res) => {
 
     return success(res, message, 'Message sent', 201);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -62,7 +62,7 @@ const markMessageRead = async (req, res) => {
     await message.update({ read: true, readAt: new Date() });
     return success(res, message, 'Message marked as read');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -71,7 +71,7 @@ const listSmsTemplates = async (req, res) => {
     const templates = await SmsTemplate.findAll({ order: [['name', 'ASC']] });
     return success(res, templates);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -83,7 +83,7 @@ const createSmsTemplate = async (req, res) => {
     const template = await SmsTemplate.create({ name, body, createdBy: req.user.id });
     return success(res, template, 'Template created', 201);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -99,7 +99,7 @@ const updateSmsTemplate = async (req, res) => {
     await template.update(updates);
     return success(res, template, 'Template updated');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -110,7 +110,7 @@ const deleteSmsTemplate = async (req, res) => {
     await template.destroy();
     return success(res, null, 'Template deleted');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 

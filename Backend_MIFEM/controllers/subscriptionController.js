@@ -22,7 +22,7 @@ const subscribe = async (req, res) => {
       return success(res, { email: req.body.email }, 'Already subscribed');
     }
     logger.error(`Subscription error: ${err.message}`);
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -37,7 +37,7 @@ const unsubscribe = async (req, res) => {
     await subscription.update({ isActive: false });
     return success(res, null, 'Unsubscribed successfully');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -49,7 +49,7 @@ const listSubscriptions = async (req, res) => {
     });
     return success(res, subscriptions);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 

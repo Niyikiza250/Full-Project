@@ -8,7 +8,7 @@ const getSetting = async (req, res) => {
     const setting = await SystemSetting.findByPk(key);
     return success(res, { key, value: setting ? setting.value : null });
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -18,10 +18,17 @@ const saveSetting = async (req, res) => {
     const { value } = req.body;
     if (value === undefined) return error(res, 'Value is required', 400);
 
+    if (key === 'smtp') {
+      const roleName = req.user && req.user.role ? (req.user.role.name || req.user.role) : '';
+      if (!['SUPER_ADMIN', 'FIELD_ADMINISTRATOR'].includes(roleName)) {
+        return error(res, 'Not authorized to modify SMTP settings', 403);
+      }
+    }
+
     await SystemSetting.upsert({ key, value });
     return success(res, { key, value }, 'Setting saved');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -30,21 +37,21 @@ const getLanguage = async (req, res) => {
     const setting = await SystemSetting.findByPk('language');
     return success(res, { language: setting ? setting.value : 'en' });
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
 const saveLanguage = async (req, res) => {
   try {
     const { language } = req.body;
-    if (!language || !['en', 'rw'].includes(language)) {
-      return error(res, 'Invalid language value. Must be "en" or "rw"', 400);
+    if (!language || !['en', 'rw', 'fr'].includes(language)) {
+      return error(res, 'Invalid language value. Must be "en", "rw", or "fr"', 400);
     }
 
     await SystemSetting.upsert({ key: 'language', value: language });
     return success(res, { ok: true }, 'Language saved');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -53,7 +60,7 @@ const listSettings = async (req, res) => {
     const settings = await SystemSetting.findAll();
     return success(res, settings);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -69,7 +76,7 @@ const testSmtp = async (req, res) => {
     }
     return error(res, 'SMTP test failed', 400, result.error);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 

@@ -39,7 +39,7 @@ const listTasks = async (req, res) => {
     return paginated(res, rows, count, page, limit);
   } catch (err) {
     logger.error(`List tasks error: ${err.message}`);
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -54,7 +54,7 @@ const getTask = async (req, res) => {
     if (!task) return error(res, 'Task not found', 404);
     return success(res, task);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -78,7 +78,7 @@ const createTask = async (req, res) => {
 
     return success(res, task, 'Task created', 201);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -109,7 +109,7 @@ const updateTask = async (req, res) => {
 
     return success(res, task, 'Task updated');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -128,7 +128,7 @@ const deleteTask = async (req, res) => {
 
     return success(res, null, 'Task deleted');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 

@@ -6,7 +6,7 @@ const listRoles = async (req, res) => {
     const roles = await Role.findAll({ order: [['hierarchy', 'ASC']] });
     return success(res, roles);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -16,7 +16,7 @@ const getRole = async (req, res) => {
     if (!role) return error(res, 'Role not found', 404);
     return success(res, role);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -31,7 +31,7 @@ const createRole = async (req, res) => {
     const role = await Role.create({ name, description, hierarchy: hierarchy || 0 });
     return success(res, role, 'Role created', 201);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -48,7 +48,7 @@ const updateRole = async (req, res) => {
     await role.update(updates);
     return success(res, role, 'Role updated');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -63,7 +63,7 @@ const deleteRole = async (req, res) => {
     await role.destroy();
     return success(res, null, 'Role deleted');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -72,7 +72,7 @@ const listPermissions = async (req, res) => {
     const permissions = await Permission.findAll({ order: [['group', 'ASC'], ['name', 'ASC']] });
     return success(res, permissions);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 

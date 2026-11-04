@@ -34,7 +34,7 @@ const listAnnouncements = async (req, res) => {
     return paginated(res, rows, count, page, limit);
   } catch (err) {
     logger.error(`List announcements error: ${err.message}`);
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -44,7 +44,7 @@ const getAnnouncement = async (req, res) => {
     if (!announcement) return error(res, 'Announcement not found', 404);
     return success(res, announcement);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -64,7 +64,7 @@ const createAnnouncement = async (req, res) => {
 
     return success(res, announcement, 'Announcement created', 201);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -80,7 +80,7 @@ const updateAnnouncement = async (req, res) => {
     await announcement.update(updates);
     return success(res, announcement, 'Announcement updated');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -91,7 +91,7 @@ const deleteAnnouncement = async (req, res) => {
     await announcement.destroy();
     return success(res, null, 'Announcement deleted');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -104,7 +104,7 @@ const markAsRead = async (req, res) => {
     });
     return success(res, record, created ? 'Marked as read' : 'Already read');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -116,7 +116,7 @@ const getReadStatus = async (req, res) => {
     });
     return success(res, reads);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 

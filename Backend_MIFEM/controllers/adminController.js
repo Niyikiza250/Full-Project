@@ -10,7 +10,7 @@ const listAuditLogs = async (req, res) => {
     });
     return success(res, logs);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -23,7 +23,7 @@ const listAdminActivity = async (req, res) => {
     });
     return success(res, logs);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 

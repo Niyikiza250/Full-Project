@@ -9,7 +9,7 @@ const listBlueCards = async (req, res) => {
     });
     return success(res, cards);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -21,7 +21,7 @@ const getBlueCard = async (req, res) => {
     if (!card) return error(res, 'Blue card not found', 404);
     return success(res, card);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -36,7 +36,7 @@ const createBlueCard = async (req, res) => {
 
     return success(res, card, 'Blue card created', 201);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -52,7 +52,7 @@ const updateBlueCard = async (req, res) => {
     await card.update(updates);
     return success(res, card, 'Blue card updated');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -64,7 +64,7 @@ const deleteBlueCard = async (req, res) => {
     await card.destroy();
     return success(res, null, 'Blue card deleted');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -90,7 +90,7 @@ const saveMissionWords = async (req, res) => {
 
     return success(res, { ok: true }, 'Mission words saved');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 

@@ -1,5 +1,7 @@
-const express = require('express');
 const dotenv = require('dotenv');
+dotenv.config();
+
+const express = require('express');
 const cors = require('cors');
 const helmet = require('helmet');
 const morgan = require('morgan');
@@ -9,21 +11,47 @@ const errorHandler = require('./middleware/errorHandler');
 const { initializeDatabase } = require('./services/databaseInit');
 const logger = require('./utils/logger');
 
-dotenv.config();
-
 const app = express();
 
+// Respect reverse-proxy headers so rate limiting and client IPs are correct
+app.set('trust proxy', 1);
+
 // Security
-app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+app.use(helmet({
+  crossOriginResourcePolicy: { policy: 'cross-origin' },
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'"],
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+      fontSrc: ["'self'", "https://fonts.gstatic.com"],
+      imgSrc: ["'self'", "data:", "blob:", "https:"],
+      connectSrc: ["'self'"],
+    },
+  },
+}));
+
+// CORS - Support multiple origins (comma-separated)
+const allowedOrigins = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+  : ['http://localhost:5173'];
+
 app.use(cors({
-  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
 }));
-app.use(generalLimiter);
+// Apply the general limiter to API traffic only (uploads/static stay unlimited)
+app.use('/api', generalLimiter);
 
-// Body parsing
-app.use(express.json({ limit: '100mb' }));
-app.use(express.urlencoded({ extended: true, limit: '100mb' }));
+// Body parsing (10MB limit to prevent DoS attacks)
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Logging
 app.use(morgan('dev'));
@@ -40,7 +68,6 @@ app.use('/api/events', require('./routes/events'));
 app.use('/api/attendance', require('./routes/attendance'));
 app.use('/api/announcements', require('./routes/announcements'));
 app.use('/api/achievement', require('./routes/achievement'));
-app.use('/api/acchievement', require('./routes/achievement')); // backward compat
 app.use('/api/hero-slides', require('./routes/heroSlides'));
 app.use('/api/system-settings', require('./routes/systemSettings'));
 app.use('/api/churches', require('./routes/churches'));
@@ -57,7 +84,7 @@ app.use('/api/prayer', require('./routes/prayer'));
 app.use('/api/training', require('./routes/training'));
 app.use('/api/documents', require('./routes/documents'));
 app.use('/api/notifications', require('./routes/notifications'));
-app.use('/api/communication/groups', require('./routes/groups'));
+app.use('/api/communication/groups', require('./routes/groupMessages'));
 app.use('/api/communication/forums', require('./routes/forums'));
 app.use('/api/volunteers/hours', require('./routes/serviceHours'));
 app.use('/api/volunteers/recognitions', require('./routes/recognitions'));
@@ -74,6 +101,11 @@ app.get('/', (req, res) => {
   });
 });
 
+// New Modules
+app.use('/api/groups', require('./routes/groups'));
+app.use('/api/special-needs', require('./routes/specialNeeds'));
+app.use('/api/privacy', require('./routes/privacy'));
+
 // Error handler
 app.use(errorHandler);
 
@@ -88,13 +120,22 @@ const start = async () => {
 
     await initializeDatabase();
 
-    // Seed church structure data
-    const { seedSdaData } = require('./seeders/sdaData');
-    await seedSdaData();
+    // Seeding is enabled by default in development only.
+    // In production set SEED_ON_STARTUP=true to opt in.
+    const shouldSeed =
+      process.env.NODE_ENV !== 'production' || process.env.SEED_ON_STARTUP === 'true';
 
-    // Always seed roles, permissions, and demo users
-    const { seed } = require('./seeders');
-    await seed();
+    if (shouldSeed) {
+      // Seed church structure data
+      const { seedSdaData } = require('./seeders/sdaData');
+      await seedSdaData();
+
+      // Seed roles, permissions, and demo users
+      const { seed } = require('./seeders');
+      await seed();
+    } else {
+      logger.info('Startup seeding skipped (production). Set SEED_ON_STARTUP=true to enable.');
+    }
 
     app.listen(PORT, () => {
       logger.info(`Server running on port ${PORT}`);

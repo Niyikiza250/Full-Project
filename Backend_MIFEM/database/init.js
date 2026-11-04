@@ -2,17 +2,14 @@ const { Pool } = require('pg');
 const logger = require('../utils/logger');
 
 const parseDatabaseUrl = () => {
-  const url = process.env.DATABASE_URL || 'postgres://postgres:12345@127.0.0.1:5432/mifem_db';
+  if (!process.env.DATABASE_URL) {
+    throw new Error('DATABASE_URL environment variable is required. Set it in your .env file (e.g., postgres://user:password@host:5432/mifem_db)');
+  }
+  const url = process.env.DATABASE_URL;
   const pattern = /^postgres(?:ql)?:\/\/([^:]+):([^@]+)@([^:]+):(\d+)\/(.+)$/;
   const match = url.match(pattern);
   if (!match) {
-    return {
-      user: process.env.DB_USER || 'postgres',
-      password: process.env.DB_PASSWORD || 'postgres',
-      host: process.env.DB_HOST || 'localhost',
-      port: parseInt(process.env.DB_PORT, 10) || 5432,
-      database: process.env.DB_NAME || 'mifem_db',
-    };
+    throw new Error('DATABASE_URL is not a valid PostgreSQL connection string. Expected format: postgres://user:password@host:port/database');
   }
   return {
     user: match[1],

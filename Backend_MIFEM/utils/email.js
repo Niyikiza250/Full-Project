@@ -180,4 +180,4 @@ const testConnection = async (config) => {
   }
 };
 
-module.exports = { sendVerificationEmail, sendPasswordResetEmail, testConnection, sendMail };
+module.exports = { sendPasswordResetEmail, testConnection, sendMail };

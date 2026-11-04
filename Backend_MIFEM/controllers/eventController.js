@@ -27,7 +27,7 @@ const listEvents = async (req, res) => {
     return paginated(res, rows, count, page, limit);
   } catch (err) {
     logger.error(`List events error: ${err.message}`);
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -42,7 +42,7 @@ const getEvent = async (req, res) => {
     if (!event) return error(res, 'Event not found', 404);
     return success(res, event);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -59,7 +59,7 @@ const createEvent = async (req, res) => {
 
     return success(res, event, 'Event created', 201);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -76,7 +76,7 @@ const updateEvent = async (req, res) => {
     await event.update(updates);
     return success(res, event, 'Event updated');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -87,7 +87,7 @@ const deleteEvent = async (req, res) => {
     await event.destroy();
     return success(res, null, 'Event deleted');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -110,7 +110,7 @@ const approveEvent = async (req, res) => {
 
     return success(res, event, 'Event approved');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -127,7 +127,7 @@ const saveTimeline = async (req, res) => {
     }
     return success(res, null, 'Timeline saved');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -139,7 +139,7 @@ const listRegistrations = async (req, res) => {
     });
     return success(res, registrations);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -161,7 +161,7 @@ const registerAttendance = async (req, res) => {
     await event.increment('currentAttendees');
     return success(res, registration, 'Registered', 201);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 

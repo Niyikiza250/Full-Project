@@ -41,31 +41,4 @@ const hierarchyScope = (req, res, next) => {
   next();
 };
 
-const addHierarchyFilter = (req, queryOptions = {}) => {
-  if (!req.hierarchyScope || req.hierarchyScope.level === 'ALL') {
-    return queryOptions;
-  }
-
-  const where = { ...queryOptions.where };
-  const scope = req.hierarchyScope;
-
-  if (scope.ids.unionId && queryOptions.modelIncludes?.unionId !== false) {
-    where.unionId = scope.ids.unionId;
-  }
-  if (scope.ids.fieldId && queryOptions.modelIncludes?.fieldId !== false) {
-    where.fieldId = scope.ids.fieldId;
-  }
-  if (scope.ids.districtId && queryOptions.modelIncludes?.districtId !== false) {
-    where.districtId = scope.ids.districtId;
-  }
-  if (scope.ids.churchId && queryOptions.modelIncludes?.churchId !== false) {
-    where.churchId = scope.ids.churchId;
-  }
-  if (scope.ids.ministryId && queryOptions.modelIncludes?.ministryId !== false) {
-    where.ministryId = scope.ids.ministryId;
-  }
-
-  return { ...queryOptions, where };
-};
-
-module.exports = { hierarchyScope, addHierarchyFilter };
+module.exports = { hierarchyScope };

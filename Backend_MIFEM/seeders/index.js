@@ -1,6 +1,5 @@
 const { sequelize } = require('../config/db');
 const Role = require('../models/Role');
-const User = require('../models/User');
 const Permission = require('../models/Permission');
 const SystemSetting = require('../models/SystemSetting');
 const HeroSlide = require('../models/HeroSlide');
@@ -75,40 +74,7 @@ const seed = async () => {
   }
   logger.info(`Permissions seeded: ${permissions.length}`);
 
-  // 3. Seed Demo Users for All Roles
-  const demoUsers = [
-    { name: 'Super Admin', email: 'admin@mifem.org', password: 'Admin@123', roleName: 'SUPER_ADMIN' },
-    { name: 'Union Leader', email: 'union@mifem.org', password: 'Demo@123', roleName: 'UNION_LEADER' },
-    { name: 'Field Admin', email: 'fieldadmin@mifem.org', password: 'Demo@123', roleName: 'FIELD_ADMINISTRATOR' },
-    { name: 'Field Leader', email: 'fieldleader@mifem.org', password: 'Demo@123', roleName: 'FIELD_LEADER' },
-    { name: 'District Leader', email: 'districtleader@mifem.org', password: 'Demo@123', roleName: 'DISTRICT_LEADER' },
-    { name: 'Church Leader', email: 'churchleader@mifem.org', password: 'Demo@123', roleName: 'CHURCH_LEADER' },
-    { name: 'Ministry Leader', email: 'ministryleader@mifem.org', password: 'Demo@123', roleName: 'MINISTRY_LEADER' },
-    { name: 'Volunteer', email: 'volunteer@mifem.org', password: 'Demo@123', roleName: 'VOLUNTEER' },
-    { name: 'Member', email: 'member@mifem.org', password: 'Demo@123', roleName: 'MEMBER' },
-  ];
-
-  for (const demo of demoUsers) {
-    const role = await Role.findOne({ where: { name: demo.roleName } });
-    if (role) {
-      const [user, created] = await User.findOrCreate({
-        where: { email: demo.email },
-        defaults: {
-          name: demo.name,
-          email: demo.email,
-          password: demo.password,
-          roleId: role.id,
-          accountStatus: 'ACTIVE',
-        },
-      });
-
-      if (created) {
-        logger.info(`${demo.name} created (${demo.email} / ${demo.password})`);
-      }
-    }
-  }
-
-  // 4. Seed Default Settings
+  // 3. Seed Default Settings
   const defaultSettings = [
     { key: 'language', value: 'en' },
     { key: 'theme', value: 'light' },
@@ -124,7 +90,7 @@ const seed = async () => {
   }
   logger.info(`Default settings seeded: ${defaultSettings.length}`);
 
-  // 5. Seed Demo Hero Slides
+  // 4. Seed Demo Hero Slides
   const demoslides = [
     {
       id: 'slide-1',
@@ -158,7 +124,7 @@ const seed = async () => {
   }
   logger.info('Demo hero slides seeded');
 
-  // 6. Seed Demo Achievements
+  // 5. Seed Demo Achievements
   const demoAchievements = [
     {
       id: 'achievement-1',
@@ -200,7 +166,7 @@ const seed = async () => {
   }
   logger.info('Demo achievements seeded');
 
-  // 7. Seed Demo Blue Card
+  // 6. Seed Demo Blue Card
   const [card] = await BlueCard.findOrCreate({
     where: { congregationLabel: 'Our Congregation' },
     defaults: {

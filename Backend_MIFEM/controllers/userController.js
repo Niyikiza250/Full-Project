@@ -8,7 +8,7 @@ const listUsers = async (req, res) => {
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 50;
     const offset = (page - 1) * limit;
-    const { search, role, status, fieldId, churchId } = req.query;
+    const { search, role, roleName, status, fieldId, churchId } = req.query;
 
     const where = {};
     if (search) {
@@ -17,7 +17,13 @@ const listUsers = async (req, res) => {
         { email: { [Op.iLike]: `%${search}%` } },
       ];
     }
-    if (role) where.roleId = role;
+    if (role) {
+      where.roleId = role;
+    } else if (roleName) {
+      const matchedRole = await Role.findOne({ where: { name: roleName } });
+      if (matchedRole) where.roleId = matchedRole.id;
+      else return paginated(res, [], 0, page, limit);
+    }
     if (status) where.accountStatus = status;
     if (fieldId) where.fieldId = fieldId;
     if (churchId) where.churchId = churchId;
@@ -34,7 +40,7 @@ const listUsers = async (req, res) => {
     return paginated(res, rows, count, page, limit);
   } catch (err) {
     logger.error(`List users error: ${err.message}`);
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -47,7 +53,7 @@ const getUser = async (req, res) => {
     if (!user) return error(res, 'User not found', 404);
     return success(res, user);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -106,7 +112,7 @@ const createUser = async (req, res) => {
 
     return success(res, result, 'User created successfully', 201);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -144,7 +150,7 @@ const updateUser = async (req, res) => {
 
     return success(res, result, 'User updated successfully');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -162,7 +168,7 @@ const deleteUser = async (req, res) => {
 
     return success(res, null, 'User deleted successfully');
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 
@@ -174,9 +180,19 @@ const bulkImportUsers = async (req, res) => {
     }
 
     const results = { created: 0, failed: 0, errors: [] };
+    const allowedFields = [
+      'name', 'email', 'password', 'phone', 'unionId', 'fieldId',
+      'districtId', 'churchId', 'ministryId', 'accountStatus',
+    ];
 
     for (const userData of users) {
       try {
+        if (!userData || !userData.email) {
+          results.failed++;
+          results.errors.push({ email: userData?.email, reason: 'Email is required' });
+          continue;
+        }
+
         const existing = await User.findOne({ where: { email: userData.email } });
         if (existing) {
           results.failed++;
@@ -184,11 +200,30 @@ const bulkImportUsers = async (req, res) => {
           continue;
         }
 
-        await User.create({
-          ...userData,
+        const resolvedRoleId = await resolveRoleId(userData.roleId || userData.role);
+        if (!resolvedRoleId) {
+          results.failed++;
+          results.errors.push({ email: userData.email, reason: 'Invalid or missing role' });
+          continue;
+        }
+
+        const allowed = await checkRoleAssignmentAllowed(req, resolvedRoleId);
+        if (!allowed) {
+          results.failed++;
+          results.errors.push({ email: userData.email, reason: 'Not permitted to assign this role' });
+          continue;
+        }
+
+        const payload = {
+          roleId: resolvedRoleId,
           password: userData.password || 'default123',
           createdBy: req.user.id,
-        });
+        };
+        for (const field of allowedFields) {
+          if (userData[field] !== undefined) payload[field] = userData[field];
+        }
+
+        await User.create(payload);
         results.created++;
       } catch (e) {
         results.failed++;
@@ -203,7 +238,7 @@ const bulkImportUsers = async (req, res) => {
 
     return success(res, results, `Imported ${results.created} users`);
   } catch (err) {
-    return error(res, 'Server error', 500, err.message);
+    return error(res, 'Server error', 500);
   }
 };
 

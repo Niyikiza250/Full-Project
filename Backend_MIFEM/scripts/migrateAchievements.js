@@ -3,10 +3,15 @@ const fs = require('fs');
 const { sequelize } = require('../config/db');
 const Achievement = require('../models/Achievement');
 
-const DATA_DIR = path.join(__dirname, '..', '..', 'Frontend_MIFEM', 'public', 'acchievement', 'data');
+const DATA_DIR = process.env.ACHIEVEMENT_DATA_DIR || path.join(__dirname, 'data');
 const BATCH_SIZE = 50;
 
 const readJsonFiles = () => {
+  if (!fs.existsSync(DATA_DIR)) {
+    console.error(`Data directory not found: ${DATA_DIR}`);
+    console.error('Set ACHIEVEMENT_DATA_DIR env var to point to the directory containing achievement JSON files.');
+    process.exit(1);
+  }
   const files = fs.readdirSync(DATA_DIR).filter(f => f.endsWith('.json'));
   files.sort();
 

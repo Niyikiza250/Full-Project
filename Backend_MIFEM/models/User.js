@@ -1,5 +1,6 @@
 const { DataTypes } = require('sequelize');
 const { sequelize } = require('../config/db');
+const bcrypt = require('bcryptjs');
 
 const User = sequelize.define('User', {
   id: { type: DataTypes.UUID, defaultValue: DataTypes.UUIDV4, primaryKey: true },
@@ -9,7 +10,7 @@ const User = sequelize.define('User', {
   profilePicture: { type: DataTypes.TEXT, defaultValue: '' },
   phone: { type: DataTypes.STRING, defaultValue: '' },
   location: { type: DataTypes.STRING, defaultValue: '' },
-  accountStatus: { type: DataTypes.ENUM('ACTIVE', 'INACTIVE', 'SUSPENDED'), defaultValue: 'ACTIVE' },
+  accountStatus: { type: DataTypes.ENUM('ACTIVE', 'INACTIVE', 'SUSPENDED', 'INVITED', 'LOCKED'), defaultValue: 'ACTIVE' },
   temporaryPasswordStatus: { type: DataTypes.BOOLEAN, defaultValue: false },
   lastLogin: { type: DataTypes.DATE, allowNull: true },
   mfaEnabled: { type: DataTypes.BOOLEAN, defaultValue: false },
@@ -30,8 +31,22 @@ const User = sequelize.define('User', {
   underscored: true,
 });
 
-User.prototype.comparePassword = function (candidatePassword) {
-  return candidatePassword === this.password;
+User.beforeCreate(async (user) => {
+  if (user.password) {
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(user.password, salt);
+  }
+});
+
+User.beforeUpdate(async (user) => {
+  if (user.changed('password')) {
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(user.password, salt);
+  }
+});
+
+User.prototype.comparePassword = async function (candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
 };
 
 module.exports = User;

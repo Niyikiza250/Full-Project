@@ -56,6 +56,7 @@ const castMemberIntegerColumns = async () => {
   const columns = [
     { table: 'Members', column: 'province_code' },
     { table: 'Members', column: 'district_code' },
+    { table: 'Members', column: 'sector_code' },
     { table: 'Members', column: 'cell_code' },
     { table: 'Members', column: 'village_code' },
   ];
@@ -68,11 +69,11 @@ const castMemberIntegerColumns = async () => {
       if (rows.length === 0) continue;
 
       const currentType = rows[0].data_type;
-      if (currentType === 'integer' || currentType === 'bigint') continue;
+      if (currentType === 'character varying' || currentType === 'text') continue;
 
-      logger.info(`Casting ${table}.${column} from ${currentType} to integer`);
+      logger.info(`Casting ${table}.${column} from ${currentType} to varchar`);
       await sequelize.query(
-        `ALTER TABLE "${table}" ALTER COLUMN "${column}" TYPE INTEGER USING "${column}"::integer`
+        `ALTER TABLE "${table}" ALTER COLUMN "${column}" TYPE VARCHAR(255) USING "${column}"::varchar`
       );
     } catch (err) {
       logger.warn(`Could not cast ${table}.${column}: ${err.message}`);
