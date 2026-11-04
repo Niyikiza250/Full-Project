@@ -7,6 +7,7 @@ import { useFontSizeStore } from '@/store/useFontSizeStore';
 import { usePhotoStore } from '@/store/usePhotoStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { getSystemDefaultLanguage, setPreferredLanguage, setSystemDefaultLanguage, type AppLanguage } from '@/lib/language';
+import { MIFEM_FAVICON } from '@/lib/assets';
 import { getDefaultLanguageSetting, saveDefaultLanguageSetting, getSmtpConfig, saveSmtpConfig, testSmtpConnection, saveSystemSetting, getSystemSetting, type SmtpConfig } from '@/api/systemSettings';
 import { ROUTES } from '@/constants/routes';
 import { useNavigate, Navigate } from 'react-router-dom';
@@ -450,7 +451,7 @@ export const Settings: React.FC = () => {
                   {faviconDataUrl ? (
                     <img src={faviconDataUrl} alt={t('settings.customFaviconAlt')} className="w-full h-full object-contain" />
                   ) : (
-                    <img src="/frontend/uploads/photo34.png" alt={t('settings.customFaviconAlt')} className="w-full h-full object-contain" />
+                    <img src={MIFEM_FAVICON} alt={t('settings.customFaviconAlt')} className="w-full h-full object-contain" />
                   )}
                 </div>
                 <div className="flex gap-2">

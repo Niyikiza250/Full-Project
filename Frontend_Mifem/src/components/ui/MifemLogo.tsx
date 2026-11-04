@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { cn } from '@/lib/utils';
 import { useLogoStore } from '@/store/useLogoStore';
 import { useTranslation } from 'react-i18next';
+import { MIFEM_LOGO } from '@/lib/assets';
 
 interface MifemLogoProps {
   className?: string;
@@ -16,20 +17,11 @@ const sizeMap = {
   xl: { icon: 56, text: 'text-base sm:text-lg', tagline: 'text-[9px] sm:text-[10px]' },
 };
 
-const UPLOADS_LOGO = '/frontend/uploads/photo33.png';
-
 export const MifemLogo: React.FC<MifemLogoProps> = ({ className, iconOnly = false, size = 'md' }) => {
   const { t } = useTranslation();
   const s = sizeMap[size];
-  const { logoDataUrl, setLogo } = useLogoStore();
-
-  useEffect(() => {
-    if (!logoDataUrl) {
-      setLogo(UPLOADS_LOGO);
-    }
-  }, [logoDataUrl, setLogo]);
-
-  const src = logoDataUrl || UPLOADS_LOGO;
+  const { logoDataUrl } = useLogoStore();
+  const src = logoDataUrl || MIFEM_LOGO;
 
   return (
     <div className={cn('flex items-center gap-3', className)}>

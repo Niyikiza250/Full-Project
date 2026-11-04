@@ -16,6 +16,17 @@ export const useLogoStore = create<LogoState>()(
     }),
     {
       name: 'mifem-logo-storage',
+      merge: (persisted, current) => {
+        const saved = persisted as Partial<LogoState> | undefined;
+        const logo = saved?.logoDataUrl;
+        return {
+          ...current,
+          ...saved,
+          // Custom logos are uploaded as data URLs. Drop any old hardcoded
+          // asset path that may have been persisted by previous versions.
+          logoDataUrl: logo?.startsWith('data:') ? logo : null,
+        };
+      },
     }
   )
 );

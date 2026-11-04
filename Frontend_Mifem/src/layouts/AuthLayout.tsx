@@ -5,6 +5,7 @@ import { useThemeStore } from '@/store/useThemeStore';
 import { ROUTES } from '@/constants/routes';
 import { MifemLogo } from '@/components/ui/MifemLogo';
 import { AdventistLogo } from '@/components/common/AdventistLogo';
+import MobileMenu from '@/components/header/MobileMenu';
 import { Sun, Moon, Languages } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -122,6 +123,7 @@ const AuthLayout: React.FC = () => {
           </button>
           <div className="hidden sm:block w-px h-8 bg-slate-200 dark:bg-slate-700" />
           <AdventistLogo />
+          <MobileMenu />
         </div>
       </header>
 

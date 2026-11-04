@@ -19,8 +19,6 @@ import {
   Medal,
   Clock,
   Globe,
-  Home,
-  Newspaper,
 } from 'lucide-react';
 
 export interface NavItem {

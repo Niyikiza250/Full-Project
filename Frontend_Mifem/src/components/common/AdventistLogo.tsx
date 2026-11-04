@@ -1,3 +1,5 @@
+import { ADVENTIST_LOGO } from '@/lib/assets';
+
 interface AdventistLogoProps {
   className?: string;
   compact?: boolean;
@@ -6,7 +8,7 @@ interface AdventistLogoProps {
 export const AdventistLogo: React.FC<AdventistLogoProps> = ({ className, compact = false }) => {
   return (
     <img
-      src="/frontend/uploads/photo29.png"
+      src={ADVENTIST_LOGO}
       alt="Seventh-day Adventist Church"
       className={`${compact ? 'h-10 sm:h-12' : 'h-12 sm:h-14 lg:h-16'} w-auto object-contain ${className ?? ''}`}
     />

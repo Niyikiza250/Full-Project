@@ -1,7 +1,8 @@
 import { useEffect } from 'react';
 import { useFaviconStore } from '@/store/useFaviconStore';
+import { MIFEM_LOGO } from '@/lib/assets';
 
-const DEFAULT_FAVICON = '/frontend/uploads/photo33.png';
+const DEFAULT_FAVICON = MIFEM_LOGO;
 
 export const FaviconUpdater: React.FC = () => {
   const { faviconDataUrl } = useFaviconStore();

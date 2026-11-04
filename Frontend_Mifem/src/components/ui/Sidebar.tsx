@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/useAuthStore';
 import { useLogoStore } from '@/store/useLogoStore';
+import { MIFEM_LOGO } from '@/lib/assets';
 import { NAVIGATION_CONFIG, NavItem } from '@/constants/navigation';
 import { ROUTES } from '@/constants/routes';
 import { cn } from '@/lib/utils';
@@ -269,8 +270,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     );
   };
 
-  // Header Brand Component (matches user's reference photos)
-  const SidebarBrand = () => (
+  // Header Brand (matches user's reference photos)
+  const renderSidebarBrand = () => (
     <div className="h-[72px] border-b border-slate-200 dark:border-slate-800 flex items-center shrink-0 overflow-hidden">
       {isExpanded ? (
         /* EXPANDED (matches Photo 1): Logo + 2-line Brand Name + Pin Button */
@@ -278,7 +279,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           <div className="flex items-center gap-2.5 min-w-0">
             <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
               <img
-                src={logoDataUrl || '/frontend/uploads/photo33.png'}
+                src={logoDataUrl || MIFEM_LOGO}
                 alt={t('mifem.logoAlt')}
                 className="w-full h-full object-contain"
               />
@@ -311,7 +312,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="w-full px-1.5 flex items-center justify-center gap-1.5">
           <div className="w-6 h-6 rounded-md overflow-hidden shrink-0 flex items-center justify-center">
             <img
-              src={logoDataUrl || '/frontend/uploads/photo33.png'}
+              src={logoDataUrl || MIFEM_LOGO}
               alt={t('mifem.logoAlt')}
               className="w-full h-full object-contain"
             />
@@ -343,7 +344,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           isExpanded ? 'w-64' : 'w-[68px]'
         )}
       >
-        <SidebarBrand />
+        {renderSidebarBrand()}
 
         {/* Navigation Sections with Category Headers / Dividers (matches photos) */}
         <nav className="flex-1 space-y-1 p-2 overflow-y-auto overflow-x-hidden custom-scrollbar">
@@ -440,7 +441,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 <div className="flex items-center gap-3">
                   <div className="w-9 h-9 rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
                     <img
-                      src={logoDataUrl || '/frontend/uploads/photo33.png'}
+                      src={logoDataUrl || MIFEM_LOGO}
                       alt={t('mifem.logoAlt')}
                       className="w-full h-full object-contain"
                     />
@@ -466,7 +467,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
               {/* Mobile Navigation with Categories */}
               <nav className="flex-1 space-y-1 p-3 overflow-y-auto">
-                {navSections.map((sec, idx) => (
+                {navSections.map((sec) => (
                   <div key={sec.key} className="space-y-1">
                     <div className="px-3 pt-3 pb-1">
                       <span className="text-[10px] font-black uppercase tracking-wider text-slate-400 dark:text-slate-500">

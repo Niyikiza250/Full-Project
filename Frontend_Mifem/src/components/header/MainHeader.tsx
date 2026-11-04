@@ -1,4 +1,3 @@
-import React, { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -8,6 +7,7 @@ import { NAVIGATION_CONFIG } from '@/constants/navigation';
 import { useNotificationReadStore } from '@/store/useNotificationReadStore';
 import { useHierarchicalAnnouncements } from '@/hooks/useCommunicationModule';
 import { AdventistLogo } from '@/components/common/AdventistLogo';
+import { MIFEM_LOGO } from '@/lib/assets';
 import {
   Sun,
   Moon,
@@ -46,7 +46,7 @@ export default function MainHeader({ hasSidebar = false, onOpenSidebar }: MainHe
   const unreadCount = announcements.filter((a) => !isRead(a.id)).length;
 
   // Active navigation detection (ONLY used inside logged-in account with hasSidebar)
-  const activeNav = useMemo(() => {
+  const activeNav = (() => {
     if (!hasSidebar) return { title: '', icon: null };
 
     const path = location.pathname;
@@ -110,7 +110,7 @@ export default function MainHeader({ hasSidebar = false, onOpenSidebar }: MainHe
       title: t('nav.dashboard') || 'Dashboard',
       icon: <LayoutDashboard size={20} />,
     };
-  }, [hasSidebar, location.pathname, location.hash, t]);
+  })();
 
   return (
     <header
@@ -133,12 +133,9 @@ export default function MainHeader({ hasSidebar = false, onOpenSidebar }: MainHe
               to={isAuthenticated ? ROUTES.DASHBOARD : ROUTES.HOME}
               className="flex items-center gap-3 hover:opacity-90 transition-opacity shrink-0"
             >
-              <div className="md:hidden relative shrink-0 w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center">
-                <AdventistLogo compact />
-              </div>
-              <div className="hidden md:block relative shrink-0 w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center">
+              <div className="relative shrink-0 w-10 h-10 rounded-lg overflow-hidden flex items-center justify-center">
                 <img
-                  src={logoDataUrl || '/frontend/uploads/photo33.png'}
+                  src={logoDataUrl || MIFEM_LOGO}
                   alt={t('mifem.logoAlt')}
                   className="w-full h-full object-contain"
                 />
@@ -287,14 +284,13 @@ export default function MainHeader({ hasSidebar = false, onOpenSidebar }: MainHe
             {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
           </button>
 
-          {/* SDA Church Logo */}
-          <div className="hidden md:block">
+          {/* SDA Church Logo — always the last item before the mobile menu */}
+          <div className="shrink-0">
             <AdventistLogo compact />
           </div>
 
-          {/* Mobile Menu Trigger — omitted inside the account; the sidebar
-              already provides navigation, keeping the mobile header to 3 buttons */}
-          {!hasSidebar && <MobileMenu appMode={false} />}
+          {/* Three-dot menu (mobile) — available on every page */}
+          <MobileMenu appMode={hasSidebar} />
         </div>
       </div>
     </header>

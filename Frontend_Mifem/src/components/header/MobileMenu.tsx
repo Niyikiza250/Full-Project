@@ -65,7 +65,7 @@ interface MobileMenuProps {
   appMode?: boolean;
 }
 
-const MobileMenu: React.FC<MobileMenuProps> = ({ appMode: _appMode = false }) => {
+const MobileMenu: React.FC<MobileMenuProps> = ({ appMode = false }) => {
   const { t, i18n } = useTranslation();
   const { user, logout, isAuthenticated } = useAuthStore();
   const { theme, toggleTheme } = useThemeStore();
@@ -178,7 +178,9 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ appMode: _appMode = false }) =>
             </div>
           )}
 
-          {/* Nav links (available in both public and app modes) */}
+          {/* Public nav links — hidden inside the authenticated app */}
+          {!appMode && (
+          <>
           <ul className="flex flex-col gap-1 mb-4">
             {MOBILE_NAV_LINKS.map((link) => (
               <li key={link.key}>
@@ -238,6 +240,8 @@ const MobileMenu: React.FC<MobileMenuProps> = ({ appMode: _appMode = false }) =>
           </ul>
 
           <hr className="my-4 border-slate-200 dark:border-white/10" />
+          </>
+          )}
 
           {/* Authenticated section */}
           {isAuthenticated ? (
