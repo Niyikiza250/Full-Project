@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
-import { useFaviconStore } from '@/store/useFaviconStore';
-import { MIFEM_LOGO } from '@/lib/assets';
+import { useBrandingStore } from '@/store/useBrandingStore';
+import { MIFEM_FAVICON } from '@/lib/assets';
 
-const DEFAULT_FAVICON = MIFEM_LOGO;
+const DEFAULT_FAVICON = MIFEM_FAVICON;
 
 export const FaviconUpdater: React.FC = () => {
-  const { faviconDataUrl } = useFaviconStore();
+  const faviconDataUrl = useBrandingStore((s) => s.faviconDataUrl);
 
   useEffect(() => {
     const link = document.querySelector<HTMLLinkElement>('link[rel="icon"]');

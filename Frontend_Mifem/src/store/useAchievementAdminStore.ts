@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 import type { AchievementItem, AchievementStatus } from '@/types/achievement';
 import { MOCK_ACHIEVEMENTS } from '@/data/enterpriseMocks';
 import { saveAchievementData, deleteAchievementData, listAchievements } from '@/api/achievementStorage';
@@ -21,7 +20,6 @@ interface AchievementAdminState {
 }
 
 export const useAchievementAdminStore = create<AchievementAdminState>()(
-  persist(
     (set, get) => ({
       items: [...MOCK_ACHIEVEMENTS],
       revision: 0,
@@ -30,14 +28,15 @@ export const useAchievementAdminStore = create<AchievementAdminState>()(
       loadFromStatic: async () => {
         try {
           const staticItems = await listAchievements();
-          if (staticItems.length > 0) {
-            const hasApproved = staticItems.some((i) => i.status === 'APPROVED');
-            if (hasApproved) {
-              set({ items: staticItems, loadedFromStatic: true, revision: get().revision + 1 });
-            }
+          set({ items: staticItems, loadedFromStatic: true, revision: get().revision + 1 });
+          try {
+            localStorage.removeItem('mifem-achievement-admin');
+            localStorage.removeItem('mifem-photo-storage');
+          } catch (error) {
+            console.warn('Could not clear obsolete local image caches', error);
           }
-        } catch {
-          console.warn('Failed to load achievements from API, using local data');
+        } catch (error) {
+          console.error('Failed to load achievements from the API; keeping cached data', error);
         }
       },
       addItem: async (item) => {
@@ -58,7 +57,15 @@ export const useAchievementAdminStore = create<AchievementAdminState>()(
           status: 'PENDING',
         };
         set((state) => ({ items: [newItem, ...state.items], revision: state.revision + 1 }));
-        await saveAchievementData(newItem);
+        try {
+          await saveAchievementData(newItem);
+        } catch (error) {
+          set((state) => ({
+            items: state.items.filter((saved) => saved.id !== newItem.id),
+            revision: state.revision + 1,
+          }));
+          throw error;
+        }
       },
       updateItem: async (id, updates) => {
         const prev = get().items.find((i) => i.id === id);
@@ -100,16 +107,4 @@ export const useAchievementAdminStore = create<AchievementAdminState>()(
       getPendingItems: () => get().items.filter((i) => i.status === 'PENDING'),
       getApprovedItems: () => get().items.filter((i) => i.status === 'APPROVED'),
     }),
-    {
-      name: 'mifem-achievement-admin',
-      merge: (persisted: unknown, current: AchievementAdminState) => {
-        const p = persisted as { items?: AchievementItem[] } | undefined;
-        const items = (p?.items || current.items).map((item) => ({
-          ...item,
-          status: (item as AchievementItem).status || ('APPROVED' as AchievementStatus),
-        }));
-        return { ...current, items };
-      },
-    }
-  )
 );

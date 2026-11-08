@@ -7,6 +7,7 @@ import { localizeAchievement } from '@/lib/achievementLocalization';
 import { Trophy, Plus, Pencil, Trash2, X, ImageUp, CheckCircle2, Clock, Check, XCircle, Loader2, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { cn } from '@/lib/utils';
+import { getApiErrorMessage } from '@/lib/apiError';
 import type { AchievementKind, AchievementItem, AchievementStatus } from '@/types/achievement';
 
 const KINDS: AchievementKind[] = ['STORY', 'GALLERY', 'MILESTONE', 'TESTIMONY', 'NEWS'];
@@ -154,15 +155,25 @@ export const AchievementManager: React.FC = () => {
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const id = await addPhoto(file);
-    const photo = usePhotoStore.getState().getPhotoById(id);
-    if (photo) {
-      try {
+    e.target.value = '';
+    if (!file.type.startsWith('image/')) {
+      setErrorMsg(t('settings.brandingInvalidFile', 'Please choose an image file.'));
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMsg(t('settings.brandingTooLarge', 'Image must be smaller than 5MB.'));
+      return;
+    }
+    try {
+      const id = await addPhoto(file);
+      const photo = usePhotoStore.getState().getPhotoById(id);
+      if (photo) {
         const path = await saveAchievementImage(`cover_${Date.now()}`, photo.dataUrl);
         setForm((f) => ({ ...f, coverUrl: path }));
-      } catch {
-        setErrorMsg(t('common.saveError', 'Failed to upload image'));
       }
+      setErrorMsg(null);
+    } catch (error) {
+      setErrorMsg(getApiErrorMessage(error, t('common.saveError', 'Failed to upload image')));
     }
   };
 
@@ -197,11 +208,11 @@ export const AchievementManager: React.FC = () => {
       setDraftItems(null);
       setSaving(false);
       showSuccess(t('achievements.manager.savedSuccess', 'Changes saved successfully'));
-    } catch {
+    } catch (error) {
       useAchievementAdminStore.setState({ items: prevItems });
       setDraftItems(null);
       setSaving(false);
-      setErrorMsg(t('common.saveError', 'Failed to save'));
+      setErrorMsg(getApiErrorMessage(error, t('common.saveError', 'Failed to save')));
     }
   };
 

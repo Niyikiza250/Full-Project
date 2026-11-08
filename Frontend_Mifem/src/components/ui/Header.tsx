@@ -362,7 +362,9 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Mobile: Adventist Logo + Three-dot Menu */}
       <div className="flex md:hidden items-center gap-2 shrink-0">
-        <AdventistLogo compact />
+        <div className="flex shrink-0 items-center">
+          <AdventistLogo compact />
+        </div>
         <MobileMenu />
       </div>
     </div>

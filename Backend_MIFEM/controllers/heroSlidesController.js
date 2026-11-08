@@ -1,11 +1,10 @@
 const { Op } = require('sequelize');
 const HeroSlide = require('../models/HeroSlide');
 const { EmailSubscription } = require('../models');
-const fs = require('fs');
-const path = require('path');
 const { success, error } = require('../utils/response');
 const { sendMail, buildTemplate } = require('../utils/email');
 const logger = require('../utils/logger');
+const { isValidImageDataUrl } = require('../utils/imageDataUrl');
 
 const notifySubscribers = async (slides) => {
   try {
@@ -46,6 +45,7 @@ const listSlides = async (req, res) => {
     const slides = await HeroSlide.findAll({ order: [['sortOrder', 'ASC'], ['createdAt', 'DESC']] });
     return success(res, slides);
   } catch (err) {
+    logger.error(`[HERO] Failed to load slides: ${err.message}`);
     return error(res, 'Server error', 500);
   }
 };
@@ -69,6 +69,7 @@ const batchSaveSlides = async (req, res) => {
 
     return success(res, { ok: true }, 'Slides saved');
   } catch (err) {
+    logger.error(`[HERO] Failed to save slides: ${err.message}`);
     return error(res, 'Server error', 500);
   }
 };
@@ -79,21 +80,13 @@ const uploadSlideImage = async (req, res) => {
     const { dataUrl } = req.body;
 
     if (!dataUrl) return error(res, 'dataUrl is required', 400);
+    if (!isValidImageDataUrl(dataUrl)) {
+      return error(res, 'A valid image data URL under 5MB is required', 400);
+    }
 
-    const matches = dataUrl.match(/^data:image\/(\w+);base64,(.+)$/);
-    if (!matches) return error(res, 'Invalid dataUrl format', 400);
-
-    const ext = matches[1] === 'jpeg' ? 'jpg' : matches[1];
-    const base64Data = matches[2];
-    const sanitizedId = path.basename(id).replace(/[^a-zA-Z0-9_-]/g, '');
-    const filename = `${sanitizedId}.${ext}`;
-    const filePath = path.join(__dirname, '..', 'uploads', filename);
-
-    fs.mkdirSync(path.join(__dirname, '..', 'uploads'), { recursive: true });
-    fs.writeFileSync(filePath, Buffer.from(base64Data, 'base64'));
-
-    return success(res, { path: `/uploads/${filename}` }, 'Image uploaded');
+    return success(res, { path: dataUrl }, 'Image ready to save');
   } catch (err) {
+    logger.error(`[HERO] Failed to process slide image ${req.params.id}: ${err.message}`);
     return error(res, 'Server error', 500);
   }
 };

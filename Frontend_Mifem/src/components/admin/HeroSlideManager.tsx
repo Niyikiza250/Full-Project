@@ -26,6 +26,7 @@ const HeroSlideManager: React.FC = () => {
   const { t } = useTranslation();
   const storeSlides = useHeroStore((s) => s.slides);
   const saving = useHeroStore((s) => s.saving);
+  const saveError = useHeroStore((s) => s.error);
   const initialized = useHeroStore((s) => s.initialized);
   const fetchSlides = useHeroStore((s) => s.fetchSlides);
   const saveToApi = useHeroStore((s) => s.saveToApi);
@@ -95,12 +96,27 @@ const HeroSlideManager: React.FC = () => {
   };
 
   const handleImageUpload = useCallback((file: File) => {
+    if (!file.type.startsWith('image/')) {
+      setErrorMsg(t('settings.brandingInvalidFile', 'Please choose an image file.'));
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMsg(t('settings.brandingTooLarge', 'Image must be smaller than 5MB.'));
+      return;
+    }
+
     const reader = new FileReader();
     reader.onloadend = () => {
+      if (typeof reader.result !== 'string') {
+        setErrorMsg(t('common.saveError', 'Failed to read image'));
+        return;
+      }
       setForm((f) => (f ? { ...f, bgImage: reader.result as string } : f));
+      setErrorMsg(null);
     };
+    reader.onerror = () => setErrorMsg(t('common.saveError', 'Failed to read image'));
     reader.readAsDataURL(file);
-  }, []);
+  }, [t]);
 
   const handleSubmitForm = () => {
     if (!form || !form.title.trim()) return;
@@ -134,7 +150,7 @@ const HeroSlideManager: React.FC = () => {
       showSuccess(t('common.saved', 'Saved successfully'));
     } else {
       useHeroStore.setState({ slides: prevSlides });
-      setErrorMsg(t('common.saveError', 'Failed to save'));
+      setErrorMsg(saveError || t('common.saveError', 'Failed to save'));
     }
   };
 
@@ -402,6 +418,7 @@ const HeroSlideManager: React.FC = () => {
                         onChange={(e) => {
                           const file = e.target.files?.[0];
                           if (file) handleImageUpload(file);
+                          e.target.value = '';
                         }}
                       />
                     </label>

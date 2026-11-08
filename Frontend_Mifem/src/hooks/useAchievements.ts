@@ -12,7 +12,7 @@ export function useAchievements(kind?: AchievementKind | 'ALL') {
     if (kind && kind !== 'ALL') list = list.filter((a) => a.kind === kind);
     return list
       .map((item) => localizeAchievement(item, t))
-      .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+      .sort((a, b) => (b.publishedAt ?? '').localeCompare(a.publishedAt ?? ''));
   }, [items, kind, t]);
 }
 
@@ -24,6 +24,6 @@ export function useAchievementsAll(kind?: AchievementKind | 'ALL') {
     if (kind && kind !== 'ALL') list = list.filter((a) => a.kind === kind);
     return list
       .map((item) => localizeAchievement(item, t))
-      .sort((a, b) => b.publishedAt.localeCompare(a.publishedAt));
+      .sort((a, b) => (b.publishedAt ?? '').localeCompare(a.publishedAt ?? ''));
   }, [items, kind, t]);
 }

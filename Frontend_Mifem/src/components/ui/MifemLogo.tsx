@@ -1,6 +1,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
-import { useLogoStore } from '@/store/useLogoStore';
+import { useBrandingStore } from '@/store/useBrandingStore';
 import { useTranslation } from 'react-i18next';
 import { MIFEM_LOGO } from '@/lib/assets';
 
@@ -20,7 +20,7 @@ const sizeMap = {
 export const MifemLogo: React.FC<MifemLogoProps> = ({ className, iconOnly = false, size = 'md' }) => {
   const { t } = useTranslation();
   const s = sizeMap[size];
-  const { logoDataUrl } = useLogoStore();
+  const logoDataUrl = useBrandingStore((s) => s.logoDataUrl);
   const src = logoDataUrl || MIFEM_LOGO;
 
   return (

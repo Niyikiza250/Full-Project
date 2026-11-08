@@ -9,6 +9,8 @@ import { ROUTES } from '@/constants/routes';
 import { Lock, Loader2, ShieldAlert } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { AdventistLogo } from '@/components/common/AdventistLogo';
+import { MifemLogo } from '@/components/ui/MifemLogo';
+import MobileMenu from '@/components/header/MobileMenu';
 
 const ForcePasswordChange: React.FC = () => {
   const { completePasswordChange, logout } = useAuthStore();
@@ -48,8 +50,14 @@ const ForcePasswordChange: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-950 px-4">
-      <div className="fixed top-3 right-3 z-20">
-        <AdventistLogo compact />
+      <div className="fixed top-3 left-3 z-20">
+        <MifemLogo size="sm" iconOnly />
+      </div>
+      <div className="fixed top-3 right-3 z-20 flex items-center gap-2">
+        <div className="flex shrink-0 items-center">
+          <AdventistLogo compact />
+        </div>
+        <MobileMenu appMode />
       </div>
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}

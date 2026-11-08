@@ -7,6 +7,7 @@ import {
   uploadHeroImage,
 } from '@/api/heroSlides';
 import type { HeroSlideDTO } from '@/api/heroSlides';
+import { getApiErrorMessage } from '@/lib/apiError';
 
 let fetching = false;
 
@@ -55,19 +56,16 @@ export const useHeroStore = create<HeroState>()((set, get) => ({
         overlayFrom: d.overlayFrom || 'from-slate-900/30',
         overlayTo: d.overlayTo || 'to-transparent',
       }));
-      fetching = false;
-      if (slides.length > 0) {
-        set({ slides, loading: false, initialized: true });
-      } else {
-        set({ slides: [...HERO_SLIDES], loading: false, initialized: true });
-      }
-    } catch {
-      fetching = false;
+      set({ slides, loading: false, initialized: true });
+    } catch (error) {
+      console.error('Failed to load hero slides from the API', error);
       set({
         loading: false,
         initialized: true,
         slides: get().slides.length > 0 ? get().slides : [...HERO_SLIDES],
       });
+    } finally {
+      fetching = false;
     }
   },
 
@@ -92,8 +90,7 @@ export const useHeroStore = create<HeroState>()((set, get) => ({
       set({ slides: dtos as HeroSlide[], saving: false });
       return true;
     } catch (err) {
-      const message =
-        err instanceof Error ? err.message : 'Failed to save hero settings';
+      const message = getApiErrorMessage(err, 'Failed to save hero settings');
       set({ saving: false, error: message });
       return false;
     }

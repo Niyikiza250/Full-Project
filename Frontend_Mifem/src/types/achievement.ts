@@ -7,7 +7,7 @@ export interface AchievementItem {
   title: string;
   summary: string;
   coverUrl?: string;
-  publishedAt: string;
+  publishedAt: string | null;
   author: string;
   tags: string[];
   status: AchievementStatus;

@@ -5,7 +5,7 @@
   "description": "MIFEM Management Information System - root scripts for the frontend and backend apps",
   "scripts": {
     "install:all": "npm --prefix Frontend_Mifem install && npm --prefix Backend_MIFEM install",
-    "dev": "npm run dev:frontend",
+    "dev": "node scripts/dev.js",
     "dev:frontend": "npm --prefix Frontend_Mifem run dev",
     "dev:backend": "npm --prefix Backend_MIFEM run dev",
     "build": "npm --prefix Frontend_Mifem run build",

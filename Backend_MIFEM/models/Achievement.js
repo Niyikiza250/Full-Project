@@ -7,7 +7,7 @@ const Achievement = sequelize.define('Achievement', {
     primaryKey: true,
   },
   kind: {
-    type: DataTypes.ENUM('STORY', 'GALLERY', 'TESTIMONY', 'NEWS'),
+    type: DataTypes.ENUM('STORY', 'GALLERY', 'MILESTONE', 'TESTIMONY', 'NEWS'),
     defaultValue: 'STORY',
   },
   title: {

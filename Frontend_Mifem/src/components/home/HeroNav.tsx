@@ -133,7 +133,7 @@ const HeroNav: React.FC = () => {
 
           {/* Mobile compact title (only when logo is icon-only) */}
           <h1 className="sm:hidden text-[11px] font-medium truncate leading-tight flex-1 text-center px-2 min-w-0">
-            {t('mifem.brandNameShort')}
+            {t('mifem.brandName')}
           </h1>
 
           {/* Desktop links */}
@@ -282,7 +282,7 @@ const HeroNav: React.FC = () => {
                 <div className="flex items-center gap-2 min-w-0">
                   <MifemLogo size="sm" iconOnly />
                   <span className="text-[11px] font-medium truncate text-sda-blue dark:text-sda-gold">
-                    {t('mifem.brandNameShort')}
+                    {t('mifem.brandName')}
                   </span>
                 </div>
                 <button

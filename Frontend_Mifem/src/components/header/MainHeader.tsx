@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useLogoStore } from '@/store/useLogoStore';
+import { useBrandingStore } from '@/store/useBrandingStore';
 import { ROUTES } from '@/constants/routes';
 import { NAVIGATION_CONFIG } from '@/constants/navigation';
 import { useNotificationReadStore } from '@/store/useNotificationReadStore';
@@ -36,7 +36,7 @@ interface MainHeaderProps {
 export default function MainHeader({ hasSidebar = false, onOpenSidebar }: MainHeaderProps) {
   const { t } = useTranslation();
   const { isAuthenticated } = useAuthStore();
-  const { logoDataUrl } = useLogoStore();
+  const logoDataUrl = useBrandingStore((s) => s.logoDataUrl);
   const { theme, toggleTheme } = useThemeStore();
   const navigate = useNavigate();
   const location = useLocation();
@@ -140,7 +140,7 @@ export default function MainHeader({ hasSidebar = false, onOpenSidebar }: MainHe
                   className="w-full h-full object-contain"
                 />
               </div>
-              <span className="text-xs lg:text-sm font-extrabold text-[#0D47A1] dark:text-sda-gold leading-tight max-w-[150px] sm:max-w-[220px] lg:max-w-none line-clamp-2">
+              <span className="hidden sm:inline text-xs lg:text-sm font-extrabold text-[#0D47A1] dark:text-sda-gold leading-tight max-w-[150px] sm:max-w-[220px] lg:max-w-none line-clamp-2">
                 {t('mifem.brandName')}
               </span>
             </Link>
@@ -157,6 +157,18 @@ export default function MainHeader({ hasSidebar = false, onOpenSidebar }: MainHe
                   <Menu size={22} />
                 </button>
               )}
+              {/* MIFEM logo — kept visible on mobile app pages (desktop has it in the sidebar) */}
+              <Link
+                to={ROUTES.HOME_CONTENT}
+                className="md:hidden flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white overflow-hidden hover:opacity-90 transition-opacity"
+                aria-label={t('mifem.brandName')}
+              >
+                <img
+                  src={logoDataUrl || MIFEM_LOGO}
+                  alt={t('mifem.logoAlt')}
+                  className="h-full w-full object-contain"
+                />
+              </Link>
               {activeNav.icon && (
                 <div
                   className="hidden md:flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-[#0D47A1]/10 dark:bg-sda-gold/15 text-[#0D47A1] dark:text-sda-gold border border-[#0D47A1]/20 dark:border-sda-gold/30 shadow-2xs shrink-0"
@@ -178,7 +190,18 @@ export default function MainHeader({ hasSidebar = false, onOpenSidebar }: MainHe
             - Logged-in account: Home & News buttons
            ======================================================== */}
         {!hasSidebar ? (
-          <NavLinks />
+          <>
+            <NavLinks />
+            {/* Mobile brand — centered between the MIFEM and SDA logos */}
+            <Link
+              to={isAuthenticated ? ROUTES.DASHBOARD : ROUTES.HOME}
+              className="sm:hidden flex flex-1 min-w-0 items-center justify-center px-1.5 text-center"
+            >
+              <span className="text-[9px] min-[400px]:text-[10px] sm:text-xs font-extrabold leading-tight tracking-tight text-[#0D47A1] dark:text-sda-gold text-center line-clamp-2">
+                {t('mifem.brandName')}
+              </span>
+            </Link>
+          </>
         ) : (
           <div className="hidden md:flex flex-1 items-center justify-center min-w-0 px-2 sm:px-4">
             <div className="flex items-center gap-2 sm:gap-3">
@@ -212,10 +235,10 @@ export default function MainHeader({ hasSidebar = false, onOpenSidebar }: MainHe
             RIGHT SECTION
             - Logged-in account & Landing page actions
            ======================================================== */}
-        <div className="flex items-center gap-2 sm:gap-3 lg:gap-4 shrink-0">
+        <div className="flex items-center justify-end gap-1.5 sm:gap-3 lg:gap-4 shrink-0">
 
-          {/* Language Switcher — hidden in the mobile account header */}
-          <div className={cn(hasSidebar && 'hidden md:block')}>
+          {/* Language Switcher — available from the mobile menu on small screens */}
+          <div className="hidden md:block">
             <LanguageSwitcher />
           </div>
 
@@ -271,21 +294,18 @@ export default function MainHeader({ hasSidebar = false, onOpenSidebar }: MainHe
             </>
           )}
 
-          {/* Dark Mode Toggle — hidden in the mobile account header */}
+          {/* Dark Mode Toggle — available from the mobile menu on small screens */}
           <button
             type="button"
             onClick={toggleTheme}
-            className={cn(
-              'inline-flex h-10 w-10 items-center justify-center rounded-full text-[#2D3748] dark:text-slate-300 hover:text-[#0D47A1] dark:hover:text-sda-gold hover:bg-slate-100 dark:hover:bg-slate-800 transition-all',
-              hasSidebar && 'hidden md:inline-flex'
-            )}
+            className="hidden md:inline-flex h-10 w-10 items-center justify-center rounded-full text-[#2D3748] dark:text-slate-300 hover:text-[#0D47A1] dark:hover:text-sda-gold hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
             aria-label={t('header.toggleTheme')}
           >
             {theme === 'light' ? <Moon size={20} /> : <Sun size={20} />}
           </button>
 
           {/* SDA Church Logo — always the last item before the mobile menu */}
-          <div className="shrink-0">
+          <div className="flex shrink-0 items-center">
             <AdventistLogo compact />
           </div>
 

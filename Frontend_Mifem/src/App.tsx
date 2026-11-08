@@ -5,6 +5,7 @@ import AppRouter from '@/routes/AppRouter';
 import { ToastContainer } from '@/components/ui/ToastContainer';
 import { FaviconUpdater } from '@/components/ui/FaviconUpdater';
 import { useAchievementAdminStore } from '@/store/useAchievementAdminStore';
+import { useBrandingStore } from '@/store/useBrandingStore';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -17,10 +18,29 @@ const queryClient = new QueryClient({
 
 const App: React.FC = () => {
   const loadFromStatic = useAchievementAdminStore((s) => s.loadFromStatic);
+  const loadBranding = useBrandingStore((s) => s.load);
 
   useEffect(() => {
-    loadFromStatic();
-  }, [loadFromStatic]);
+    const refreshSharedContent = () => {
+      void loadFromStatic();
+      void loadBranding();
+    };
+
+    refreshSharedContent();
+
+    const handleVisibility = () => {
+      if (document.visibilityState === 'visible') refreshSharedContent();
+    };
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === 'visible') refreshSharedContent();
+    }, 30_000);
+
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', handleVisibility);
+    };
+  }, [loadFromStatic, loadBranding]);
 
   return (
     <QueryClientProvider client={queryClient}>

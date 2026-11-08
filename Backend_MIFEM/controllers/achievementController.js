@@ -3,6 +3,8 @@ const Achievement = require('../models/Achievement');
 const fs = require('fs');
 const path = require('path');
 const { success, error } = require('../utils/response');
+const { isValidImageDataUrl } = require('../utils/imageDataUrl');
+const logger = require('../utils/logger');
 
 const listAchievements = async (req, res) => {
   try {
@@ -16,6 +18,7 @@ const listAchievements = async (req, res) => {
     });
     return success(res, achievements);
   } catch (err) {
+    logger.error(`[ACHIEVEMENT] Failed to load achievements: ${err.message}`);
     return error(res, 'Server error', 500);
   }
 };
@@ -34,6 +37,7 @@ const saveAchievement = async (req, res) => {
 
     return success(res, { ok: true }, 'Achievement saved');
   } catch (err) {
+    logger.error(`[ACHIEVEMENT] Failed to save ${req.params.id}: ${err.message}`);
     return error(res, 'Server error', 500);
   }
 };
@@ -56,6 +60,7 @@ const deleteAchievement = async (req, res) => {
     await Achievement.destroy({ where: { id } });
     return success(res, { ok: true }, 'Achievement deleted');
   } catch (err) {
+    logger.error(`[ACHIEVEMENT] Failed to delete ${req.params.id}: ${err.message}`);
     return error(res, 'Server error', 500);
   }
 };
@@ -68,24 +73,13 @@ const uploadAchievementImage = async (req, res) => {
     if (!dataUrl) {
       return error(res, 'dataUrl is required', 400);
     }
-
-    const matches = dataUrl.match(/^data:image\/(\w+);base64,(.+)$/);
-    if (!matches) {
-      return error(res, 'Invalid dataUrl format', 400);
+    if (!isValidImageDataUrl(dataUrl)) {
+      return error(res, 'A valid image data URL under 5MB is required', 400);
     }
 
-    const sanitizedId = path.basename(id).replace(/[^a-zA-Z0-9_-]/g, '');
-    const ext = matches[1] === 'jpeg' ? 'jpg' : matches[1];
-    const base64Data = matches[2];
-    const filename = `${sanitizedId}.${ext}`;
-    const filePath = path.join(__dirname, '..', 'uploads', filename);
-
-    fs.mkdirSync(path.join(__dirname, '..', 'uploads'), { recursive: true });
-    fs.writeFileSync(filePath, Buffer.from(base64Data, 'base64'));
-
-    const publicPath = `/uploads/${filename}`;
-    return success(res, { path: publicPath }, 'Image uploaded');
+    return success(res, { path: dataUrl }, 'Image ready to save');
   } catch (err) {
+    logger.error(`[ACHIEVEMENT] Failed to process image ${req.params.id}: ${err.message}`);
     return error(res, 'Server error', 500);
   }
 };

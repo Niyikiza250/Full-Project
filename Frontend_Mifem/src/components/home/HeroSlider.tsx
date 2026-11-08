@@ -78,24 +78,30 @@ const HeroSlider: React.FC = () => {
   const fetchSlides = useHeroStore((s) => s.fetchSlides);
   const initialized = useHeroStore((s) => s.initialized);
   const slides = useHeroStore(useShallow((s) => s.slides.filter((slide) => slide.active !== false)));
+  const [[current, direction], setCurrent] = useState<[number, number]>([0, 0]);
+  const pausedRef = useRef(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const activeCurrent = current < slides.length ? current : 0;
 
   useEffect(() => {
     if (!initialized) fetchSlides();
   }, [fetchSlides, initialized]);
 
   useEffect(() => {
+    const intervalId = window.setInterval(() => {
+      if (document.visibilityState === 'visible') fetchSlides();
+    }, 30_000);
     const onVisible = () => {
       if (document.visibilityState === 'visible') {
         fetchSlides();
       }
     };
     document.addEventListener('visibilitychange', onVisible);
-    return () => document.removeEventListener('visibilitychange', onVisible);
+    return () => {
+      window.clearInterval(intervalId);
+      document.removeEventListener('visibilitychange', onVisible);
+    };
   }, [fetchSlides]);
-
-  const [[current, direction], setCurrent] = useState<[number, number]>([0, 0]);
-  const pausedRef = useRef(false);
-  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const paginate = useCallback(
     (dir: number) => {
@@ -105,7 +111,7 @@ const HeroSlider: React.FC = () => {
         return [next, dir];
       });
     },
-    [slides.length],
+    [setCurrent, slides.length],
   );
 
   const startAutoplay = useCallback(() => {
@@ -128,11 +134,11 @@ const HeroSlider: React.FC = () => {
 
   const goTo = useCallback(
     (idx: number) => {
-      const dir = idx > current ? 1 : -1;
+      const dir = idx > activeCurrent ? 1 : -1;
       setCurrent([idx, dir]);
       if (slides.length > 1) startAutoplay();
     },
-    [current, slides.length, startAutoplay],
+    [activeCurrent, setCurrent, slides.length, startAutoplay],
   );
 
   if (!initialized) {
@@ -158,7 +164,7 @@ const HeroSlider: React.FC = () => {
     );
   }
 
-  const slide = slides[current];
+  const slide = slides[activeCurrent];
 
   return (
     <section className="relative w-full min-h-[100dvh] overflow-hidden">
@@ -245,7 +251,7 @@ const HeroSlider: React.FC = () => {
               onClick={() => goTo(i)}
               className={cn(
                 'transition-all duration-300 rounded-full cursor-pointer',
-                i === current
+                i === activeCurrent
                   ? 'w-8 h-2.5 bg-sda-gold shadow-lg shadow-sda-gold/40'
                   : 'w-2.5 h-2.5 bg-white/40 hover:bg-white/60'
               )}

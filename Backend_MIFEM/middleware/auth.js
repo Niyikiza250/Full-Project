@@ -1,5 +1,6 @@
 const jwt = require('jsonwebtoken');
 const { User } = require('../models');
+const logger = require('../utils/logger');
 
 const protect = async (req, res, next) => {
   let token;
@@ -23,7 +24,12 @@ const protect = async (req, res, next) => {
 
       next();
     } catch (error) {
-      return res.status(401).json({ success: false, message: 'Not authorized, token invalid' });
+      if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+        return res.status(401).json({ success: false, message: 'Not authorized, token invalid' });
+      }
+
+      logger.error(`Authentication lookup failed: ${error.message}`);
+      return res.status(500).json({ success: false, message: 'Unable to verify user account' });
     }
   } else {
     return res.status(401).json({ success: false, message: 'Not authorized, no token provided' });

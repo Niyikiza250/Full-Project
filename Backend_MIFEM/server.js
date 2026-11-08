@@ -10,6 +10,7 @@ const { generalLimiter } = require('./middleware/rateLimiter');
 const errorHandler = require('./middleware/errorHandler');
 const { initializeDatabase } = require('./services/databaseInit');
 const logger = require('./utils/logger');
+const { isAllowedOrigin, normalizeOrigin } = require('./utils/corsOrigin');
 
 const app = express();
 
@@ -33,15 +34,18 @@ app.use(helmet({
 
 // CORS - Support multiple origins (comma-separated)
 const allowedOrigins = process.env.CORS_ORIGIN
-  ? process.env.CORS_ORIGIN.split(',').map(o => o.trim())
+  ? process.env.CORS_ORIGIN.split(',').map(normalizeOrigin).filter(Boolean)
   : ['http://localhost:5173'];
+const isDevelopment = process.env.NODE_ENV !== 'production';
 
 app.use(cors({
   origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
+    if (isAllowedOrigin(origin, allowedOrigins, isDevelopment)) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      const corsError = new Error(`Origin ${origin} is not allowed by CORS`);
+      corsError.statusCode = 403;
+      callback(corsError);
     }
   },
   credentials: true,
@@ -70,6 +74,7 @@ app.use('/api/announcements', require('./routes/announcements'));
 app.use('/api/achievement', require('./routes/achievement'));
 app.use('/api/hero-slides', require('./routes/heroSlides'));
 app.use('/api/system-settings', require('./routes/systemSettings'));
+app.use('/api/branding', require('./routes/branding'));
 app.use('/api/churches', require('./routes/churches'));
 app.use('/api/blue-cards', require('./routes/blueCards'));
 app.use('/api/communication', require('./routes/communication'));

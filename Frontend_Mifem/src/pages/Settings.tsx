@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useThemeStore } from '@/store/useThemeStore';
-import { useLogoStore } from '@/store/useLogoStore';
-import { useFaviconStore } from '@/store/useFaviconStore';
+import { useBrandingStore } from '@/store/useBrandingStore';
 import { useFontSizeStore } from '@/store/useFontSizeStore';
 import { usePhotoStore } from '@/store/usePhotoStore';
 import { useAuthStore } from '@/store/useAuthStore';
@@ -23,8 +22,10 @@ export const Settings: React.FC = () => {
   const { t, i18n } = useTranslation();
   const { user } = useAuthStore();
   const { theme, toggleTheme } = useThemeStore();
-  const { logoDataUrl, setLogo, removeLogo } = useLogoStore();
-  const { faviconDataUrl, setFavicon, removeFavicon } = useFaviconStore();
+  const logoDataUrl = useBrandingStore((s) => s.logoDataUrl);
+  const faviconDataUrl = useBrandingStore((s) => s.faviconDataUrl);
+  const saveBrandAsset = useBrandingStore((s) => s.saveAsset);
+  const removeBrandAsset = useBrandingStore((s) => s.removeAsset);
   const { fontSize, increaseFontSize, decreaseFontSize } = useFontSizeStore();
   const { addPhoto } = usePhotoStore();
   const navigate = useNavigate();
@@ -35,8 +36,7 @@ export const Settings: React.FC = () => {
     const reader = new FileReader();
     reader.onload = async (event) => {
       const dataUrl = event.target?.result as string;
-      setLogo(dataUrl);
-      try { await saveSystemSetting('logo', dataUrl); } catch { /* fallback */ }
+      try { await saveBrandAsset('logo', dataUrl); } catch { /* fallback */ }
       await addPhoto(file);
     };
     reader.readAsDataURL(file);
@@ -48,8 +48,7 @@ export const Settings: React.FC = () => {
     const reader = new FileReader();
     reader.onload = async (event) => {
       const dataUrl = event.target?.result as string;
-      setFavicon(dataUrl);
-      try { await saveSystemSetting('favicon', dataUrl); } catch { /* fallback */ }
+      try { await saveBrandAsset('favicon', dataUrl); } catch { /* fallback */ }
       await addPhoto(file);
     };
     reader.readAsDataURL(file);
@@ -145,23 +144,13 @@ export const Settings: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    void (async () => {
-      try {
-        const [logoVal, faviconVal] = await Promise.all([
-          getSystemSetting('logo'),
-          getSystemSetting('favicon'),
-        ]);
-        if (logoVal) setLogo(logoVal);
-        if (faviconVal) setFavicon(faviconVal);
-      } catch { /* fallback */ }
-    })();
     void loadSetting('notification_email_alerts', setEmailAlerts, true);
     void loadSetting('notification_sms_alerts', setSmsAlerts, false);
     void loadSetting('notification_weekly_digest', setWeeklyDigest, true);
     void loadSetting('mfa_enabled', setMfaEnabled, false);
     void loadSetting('accessibility_high_contrast', setHighContrast, false);
     void loadSetting('accessibility_large_text', setLargeText, false);
-  }, [setLogo, setFavicon]);
+  }, []);
 
   const handleSetDefaultLanguage = async () => {
     setIsSavingDefaultLanguage(true);
@@ -428,10 +417,7 @@ export const Settings: React.FC = () => {
                   {logoDataUrl && (
                     <button
                       type="button"
-                      onClick={async () => {
-                        removeLogo();
-                        try { await saveSystemSetting('logo', ''); } catch { /* fallback */ }
-                      }}
+                      onClick={() => void removeBrandAsset('logo')}
                       className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 dark:border-red-900/50 px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all cursor-pointer"
                     >
                       <Trash2 size={14} />
@@ -463,10 +449,7 @@ export const Settings: React.FC = () => {
                   {faviconDataUrl && (
                     <button
                       type="button"
-                      onClick={async () => {
-                        removeFavicon();
-                        try { await saveSystemSetting('favicon', ''); } catch { /* fallback */ }
-                      }}
+                      onClick={() => void removeBrandAsset('favicon')}
                       className="inline-flex items-center gap-1.5 rounded-xl border border-red-200 dark:border-red-900/50 px-4 py-2 text-xs font-bold text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all cursor-pointer"
                     >
                       <Trash2 size={14} />

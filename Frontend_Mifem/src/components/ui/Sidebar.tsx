@@ -2,7 +2,7 @@ import React, { useState, useCallback, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/store/useAuthStore';
-import { useLogoStore } from '@/store/useLogoStore';
+import { useBrandingStore } from '@/store/useBrandingStore';
 import { MIFEM_LOGO } from '@/lib/assets';
 import { NAVIGATION_CONFIG, NavItem } from '@/constants/navigation';
 import { ROUTES } from '@/constants/routes';
@@ -58,7 +58,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const { t } = useTranslation();
   const { user, logout } = useAuthStore();
   const location = useLocation();
-  const { logoDataUrl } = useLogoStore();
+  const logoDataUrl = useBrandingStore((s) => s.logoDataUrl);
   const [openSubMenus, setOpenSubMenus] = useState<Record<string, boolean>>({});
   const [isHovered, setIsHovered] = useState(false);
   const [isPinned, setIsPinned] = useState(false);

@@ -1,5 +1,4 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
 
 export interface StoredPhoto {
   id: string;
@@ -16,14 +15,17 @@ interface PhotoState {
 }
 
 export const usePhotoStore = create<PhotoState>()(
-  persist(
     (set, get) => ({
       photos: [],
       addPhoto: async (file: File) => {
         const id = `photo_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-        const dataUrl = await new Promise<string>((resolve) => {
+        const dataUrl = await new Promise<string>((resolve, reject) => {
           const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
+          reader.onload = () => {
+            if (typeof reader.result === 'string') resolve(reader.result);
+            else reject(new Error('Could not read the selected image'));
+          };
+          reader.onerror = () => reject(new Error('Could not read the selected image'));
           reader.readAsDataURL(file);
         });
         const photo: StoredPhoto = { id, name: file.name, dataUrl, uploadedAt: new Date().toISOString() };
@@ -34,6 +36,4 @@ export const usePhotoStore = create<PhotoState>()(
         set((state) => ({ photos: state.photos.filter((p) => p.id !== id) })),
       getPhotoById: (id: string) => get().photos.find((p) => p.id === id),
     }),
-    { name: 'mifem-photo-storage' }
-  )
 );

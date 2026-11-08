@@ -4,6 +4,7 @@ import { useAchievementAdminStore } from '@/store/useAchievementAdminStore';
 import { usePhotoStore } from '@/store/usePhotoStore';
 import { useAuthStore } from '@/store/useAuthStore';
 import { saveAchievementImage } from '@/api/achievementStorage';
+import { getApiErrorMessage } from '@/lib/apiError';
 import { Trophy, Plus, X, ImageUp, CheckCircle2, Clock, Send, AlertCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { AchievementKind } from '@/types/achievement';
@@ -52,15 +53,25 @@ export const LeaderAchievementForm: React.FC = () => {
   const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const id = await addPhoto(file);
-    const photo = usePhotoStore.getState().getPhotoById(id);
-    if (photo) {
-      try {
+    e.target.value = '';
+    if (!file.type.startsWith('image/')) {
+      setErrorMsg(t('settings.brandingInvalidFile', 'Please choose an image file.'));
+      return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setErrorMsg(t('settings.brandingTooLarge', 'Image must be smaller than 5MB.'));
+      return;
+    }
+    try {
+      const id = await addPhoto(file);
+      const photo = usePhotoStore.getState().getPhotoById(id);
+      if (photo) {
         const path = await saveAchievementImage(`cover_${Date.now()}`, photo.dataUrl);
         setForm((f) => ({ ...f, coverUrl: path }));
-      } catch {
-        setErrorMsg(t('common.saveError', 'Failed to upload image'));
       }
+      setErrorMsg('');
+    } catch (error) {
+      setErrorMsg(getApiErrorMessage(error, t('common.saveError', 'Failed to upload image')));
     }
   };
 
@@ -68,23 +79,30 @@ export const LeaderAchievementForm: React.FC = () => {
     setForm((f) => ({ ...f, coverUrl: dataUrl }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.title.trim() || !form.summary.trim()) return;
 
     const tags = form.tags.split(',').map((s) => s.trim()).filter(Boolean);
     const galleryUrls = form.galleryUrls.split(',').map((s) => s.trim()).filter(Boolean);
 
-    submitFromLeader({
-      kind: form.kind,
-      title: form.title,
-      summary: form.summary,
-      coverUrl: form.coverUrl || undefined,
-      author: form.author || user?.name || t('achievements.leader.defaultAuthor'),
-      tags: tags.length ? tags : [t('achievements.manager.defaultTag')],
-      galleryUrls: galleryUrls.length ? galleryUrls : undefined,
-      submittedBy: user?.name || t('achievements.leader.unknownSubmitter'),
-      submittedByRole: user?.role || 'UNKNOWN',
-    });
+    setErrorMsg('');
+    try {
+      await submitFromLeader({
+        kind: form.kind,
+        title: form.title,
+        summary: form.summary,
+        coverUrl: form.coverUrl || undefined,
+        author: form.author || user?.name || t('achievements.leader.defaultAuthor'),
+        tags: tags.length ? tags : [t('achievements.manager.defaultTag')],
+        galleryUrls: galleryUrls.length ? galleryUrls : undefined,
+        submittedBy: user?.name || t('achievements.leader.unknownSubmitter'),
+        submittedByRole: user?.role || 'UNKNOWN',
+      });
+    } catch (error) {
+      console.error('Failed to submit achievement', error);
+      setErrorMsg(getApiErrorMessage(error, t('common.saveError', 'Failed to save')));
+      return;
+    }
 
     showSuccess(t('achievements.leader.submittedSuccess'));
     setShowForm(false);

@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { motion } from 'framer-motion';
 import HeroSlideManager from '@/components/admin/HeroSlideManager';
 import { AchievementManager } from '@/components/admin/AchievementManager';
+import BrandLogoManager from '@/components/admin/BrandLogoManager';
 
 const LandingPageSettings: React.FC = () => {
   const { t } = useTranslation();
@@ -21,6 +22,8 @@ const LandingPageSettings: React.FC = () => {
           {t('settings.landingPageManagementDesc', 'Control what appears on the public homepage. Manage hero slides and featured content.')}
         </p>
       </div>
+
+      <BrandLogoManager />
 
       <HeroSlideManager />
 

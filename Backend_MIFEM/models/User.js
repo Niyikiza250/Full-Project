@@ -10,6 +10,7 @@ const User = sequelize.define('User', {
   profilePicture: { type: DataTypes.TEXT, defaultValue: '' },
   phone: { type: DataTypes.STRING, defaultValue: '' },
   location: { type: DataTypes.STRING, defaultValue: '' },
+  roleId: { type: DataTypes.UUID, allowNull: true, field: 'role_id' },
   accountStatus: { type: DataTypes.ENUM('ACTIVE', 'INACTIVE', 'SUSPENDED', 'INVITED', 'LOCKED'), defaultValue: 'ACTIVE' },
   temporaryPasswordStatus: { type: DataTypes.BOOLEAN, defaultValue: false },
   lastLogin: { type: DataTypes.DATE, allowNull: true },

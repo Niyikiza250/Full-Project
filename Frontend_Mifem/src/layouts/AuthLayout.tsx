@@ -42,8 +42,8 @@ const AuthLayout: React.FC = () => {
 
       {/* Header */}
       <header className="sticky top-0 z-40 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 min-h-16 flex items-center justify-between gap-3 px-4 sm:px-6 shadow-sm">
-        <div className="flex items-center gap-2 min-w-0">
-          <Link to={ROUTES.HOME} className="hover:opacity-80 transition-opacity">
+        <div className="flex items-center gap-2 min-w-0 shrink-0">
+          <Link to={ROUTES.HOME} className="shrink-0 hover:opacity-80 transition-opacity">
             <span className="hidden sm:block">
               <MifemLogo size="md" />
             </span>
@@ -122,7 +122,9 @@ const AuthLayout: React.FC = () => {
             {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
           </button>
           <div className="hidden sm:block w-px h-8 bg-slate-200 dark:bg-slate-700" />
-          <AdventistLogo />
+          <div className="flex shrink-0 items-center">
+            <AdventistLogo compact />
+          </div>
           <MobileMenu />
         </div>
       </header>
